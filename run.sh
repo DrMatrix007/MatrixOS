@@ -1,5 +1,7 @@
 #!/bin/bash
-/usr/bin/cmake --preset=i686 -DCMAKE_INSTALL_PREFIX=out/install/i686 \
- -Bout/build/i686
-/usr/bin/cmake --build out/build/i686 --parallel 30
-qemu-system-i386 -kernel out/build/i686/matrix_os
+
+./build.sh
+./build_image.sh
+
+qemu-system-i386 -cdrom ./matrix_os.iso
+

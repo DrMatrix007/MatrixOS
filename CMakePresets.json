@@ -1,0 +1,17 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "i686",
+            "displayName": "GCC 15.1.0 i686-elf",
+            "description": "Using compilers: C = /home/ofrih/opt/cross/bin/i686-elf-gcc, CXX = /home/ofrih/opt/cross/bin/i686-elf-g++",
+            "binaryDir": "${sourceDir}/out/build/${presetName}",
+            "cacheVariables": {
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/out/install/${presetName}",
+                "CMAKE_C_COMPILER": "/home/ofrih/opt/cross/bin/i686-elf-gcc",
+                "CMAKE_CXX_COMPILER": "/home/ofrih/opt/cross/bin/i686-elf-g++",
+                "CMAKE_BUILD_TYPE": "Debug"
+            }
+        }
+    ]
+}

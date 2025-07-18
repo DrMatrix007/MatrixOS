@@ -1,4 +1,4 @@
-/out/
-/bin/
+/zig-out/
+/.zig-cache/
 /iso/
-matrix_os.iso
+kernel.iso

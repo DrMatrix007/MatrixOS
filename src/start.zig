@@ -1,5 +1,4 @@
 const kernel = @import("./kernel.zig");
-
 const ALIGN = 1 << 0;
 const MEMINFO = 1 << 1;
 const MAGIC = 0x1BADB002;

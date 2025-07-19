@@ -44,7 +44,7 @@ fn buildKernel(b: *std.Build) *std.Build.Step.Compile {
 
     const kernel = b.addExecutable(.{
         .name = "kernel.elf",
-        .root_source_file = b.path("src/main.zig"),
+        .root_source_file = b.path("src/start.zig"),
         .target = b.resolveTargetQuery(target_query),
         .optimize = optimize,
         .code_model = .kernel,

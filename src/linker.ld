@@ -1,4 +1,4 @@
-ENTRY(_start)
+ENTRY(_start_kernel)
  
 SECTIONS {
     . = 2M;

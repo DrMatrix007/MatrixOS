@@ -6,9 +6,10 @@ pub fn build(b: *std.Build) void {
     const kernel_step = b.step("kernel", "Build the kernel");
     const image_step = b.step("image", "Build bootable ISO image");
     const run_step = b.step("run", "Run kernel in QEMU");
+    const tests_step = b.step("test", "Run tests");
 
     // Build kernel
-    const kernel = buildKernel(b);
+    const kernel, const tests = buildKernelStep(b);
     kernel_step.dependOn(&b.addInstallArtifact(kernel, .{}).step);
 
     // Build image - depends on kernel
@@ -16,13 +17,16 @@ pub fn build(b: *std.Build) void {
     image_cmd.step.dependOn(kernel_step);
     image_step.dependOn(&image_cmd.step);
 
+    // Build tests
+    tests_step.dependOn(&tests.step);
+
     // Run kernel - depends on image
     const run_cmd = runKernelStep(b);
     run_cmd.step.dependOn(image_step);
     run_step.dependOn(&run_cmd.step);
 }
 
-fn buildKernel(b: *std.Build) *std.Build.Step.Compile {
+fn buildKernelStep(b: *std.Build) struct { *std.Build.Step.Compile, *std.Build.Step.Run } {
     var disabled_features = std.Target.Cpu.Feature.Set.empty;
     var enabled_features = std.Target.Cpu.Feature.Set.empty;
 
@@ -42,16 +46,30 @@ fn buildKernel(b: *std.Build) *std.Build.Step.Compile {
     };
     const optimize = b.standardOptimizeOption(.{});
 
+    const target = b.resolveTargetQuery(target_query);
+    
+    const std_target = b.standardTargetOptions(.{});
+
     const kernel = b.addExecutable(.{
         .name = "kernel.elf",
         .root_source_file = b.path("src/start.zig"),
-        .target = b.resolveTargetQuery(target_query),
+        .target = target,
         .optimize = optimize,
         .code_model = .kernel,
     });
 
     kernel.setLinkerScript(b.path("src/linker.ld"));
-    return kernel;
+
+    var main_tests = b.addTest(.{
+        .root_source_file = b.path("src/start.zig"),  
+        .target = std_target,
+        .optimize = optimize,
+    });
+    main_tests.addLibraryPath(b.path("."));
+    
+    const tests = b.addRunArtifact(main_tests);
+
+    return .{ kernel, tests };
 }
 
 fn buildImageStep(b: *std.Build) *std.Build.Step.Run {

@@ -1,5 +1,5 @@
 const console = @import("./console.zig");
-
+const interrupts = @import("./interrupts/interrupts.zig");
 
 pub fn kmain() callconv(.C) noreturn {
     console.initialize();

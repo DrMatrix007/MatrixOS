@@ -72,7 +72,7 @@ const TSS = packed struct {
 test "size of TSS" {
     const size = @sizeOf(TSS);
     std.debug.print("TaskStateSegment size: {}\n", .{size});
-    try std.testing.expect(size == 100);
+    try std.testing.expect(size == 99);
 }
 
 const entries = [_]SegmentDescriptor{

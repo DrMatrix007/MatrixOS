@@ -1,0 +1,1 @@
+rm -fr ./build && mkdir -p build && cd build && cmake .. && cmake --build . --verbose && cd .. && qemu-system-x86_64 -cdrom build/matrix_kernel.img  || cd .. 

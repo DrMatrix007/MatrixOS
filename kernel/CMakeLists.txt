@@ -19,11 +19,9 @@ target_compile_options(matrix_kernel PRIVATE
     -ffreestanding
     -Wall
     -Wextra
-    -m32
 )
 
 target_link_options(matrix_kernel PRIVATE 
-    -m32
     -nostdlib 
     -ffreestanding
     -T ${CMAKE_SOURCE_DIR}/linker.ld

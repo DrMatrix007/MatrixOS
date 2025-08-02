@@ -14,7 +14,6 @@ add_library(LibMatrix ${SOURCE_FILES} ${HEADER_FILES})
 target_compile_features(LibMatrix PUBLIC c_std_23)
 target_compile_features(LibMatrix PUBLIC cxx_std_26)
 
-
 target_compile_options(LibMatrix PRIVATE
     -ffreestanding
     -Wall

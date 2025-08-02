@@ -8,6 +8,9 @@ file(GLOB_RECURSE SRC src/*.cpp src/*.hpp )
 
 add_library(matrix_efi ${SRC})
 
+target_include_directories(matrix_efi PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
+target_include_directories(matrix_efi PUBLIC "/usr/include/efi/")
+
 target_compile_features(matrix_efi PUBLIC c_std_23)
 target_compile_features(matrix_efi PUBLIC cxx_std_26)
 
@@ -16,7 +19,6 @@ target_compile_options(matrix_efi PRIVATE
     -ffreestanding
     -fshort-wchar
     -mno-red-zone
-    -I/usr/include
 )
 
 target_link_options(matrix_efi PRIVATE
@@ -30,7 +32,6 @@ target_link_options(matrix_efi PRIVATE
 
 include(CTest)
 enable_testing()
-
 
 
 

@@ -1,29 +1,23 @@
-ENTRY(_start)
+OUTPUT_FORMAT(elf64-x86-64)
+ENTRY(efi_main)
 
 SECTIONS
 {
-	. = 2M;
-
-	.text BLOCK(4K) : ALIGN(4K)
+	.text : ALIGN(0x1000)
 	{
-		*(.multiboot)
 		*(.text)
 	}
-
-	.rodata BLOCK(4K) : ALIGN(4K)
-	{
-		*(.rodata)
-	}
-
-	.data BLOCK(4K) : ALIGN(4K)
+	.data : ALIGN(0x1000)
 	{
 		*(.data)
 	}
-
-	.bss BLOCK(4K) : ALIGN(4K)
+	.rodata : ALIGN(0x1000)
+	{
+		*(.rodata)
+	}
+	.bss : ALIGN(0x1000)
 	{
 		*(COMMON)
 		*(.bss)
 	}
-
 }

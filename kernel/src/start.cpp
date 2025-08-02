@@ -1,44 +1,36 @@
 #include "multiboot_header.h"
 #include "kernel.h"
+#include "efi/efi.h"
+#include "efi/efilib.h"
 
-__attribute__((aligned(16), section(".bss")))
-uint8_t kernel_stack[16 * 1024];
 
-extern "C" void _start()
+
+EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
-    // 1. Clear PG (bit 31) in CR0
-    asm volatile(
-        "mov %%cr0, %%rax\n"
-        "and $0x7FFFFFFF, %%rax\n"
-        "mov %%rax, %%cr0\n"
-        :
-        :
-        : "rax");
-    // 2. Set RSP to top of kernel stack
-    asm volatile(
-        "mov %0, %%rsp\n"
-        :
-        : "r"(kernel_stack + sizeof(kernel_stack)));
+    EFI_STATUS Status;
+    EFI_INPUT_KEY Key;
+    wchar_t output[] = L"Hello World\r\n";
+    /* Store the system table for future use in other functions */
+    // ST = SystemTable;
 
+    /* Say hi */
+    Status = SystemTable->ConOut->OutputString(SystemTable->ConOut, output); // EFI Applications use Unicode and CRLF, a la Windows
+    if (EFI_ERROR(Status))
+        return Status;
 
-    // 3. Enable PAE (bit 5) in CR4
-    asm volatile(
-        "mov %%cr4, %%rax\n"
-        "or $0x20, %%rax\n"
-        "mov %%rax, %%cr4\n"
-        :
-        :
-        : "rax");
-    return;
-    // 4. Enable Long Mode (LME) in MSR 0xC0000080 (IA32_EFER)
-    asm volatile(
-        "mov $0xC0000080, %%ecx\n"
-        "rdmsr\n"
-        "bts $8, %%eax\n"
-        "wrmsr\n"
-        :
-        :
-        : "rax", "rcx", "rdx");
+    /* Now wait for a keystroke before continuing, otherwise your
+       message will flash off the screen before you see it.
 
-    // kernel_main();
+       First, we need to empty the console input buffer to flush
+       out any keystrokes entered before this point */
+    Status = SystemTable->ConIn->Reset(SystemTable->ConIn, FALSE);
+    if (EFI_ERROR(Status))
+        return Status;
+
+    /* Now wait until a key becomes available.  This is a simple
+       polling implementation.  You could try and use the WaitForKey
+       event instead if you like */
+    while ((Status = SystemTable->ConIn->ReadKeyStroke(SystemTable->ConIn, &Key)) == EFI_NOT_READY) ;
+
+    return Status;
 }

@@ -16,35 +16,57 @@ target_compile_features(matrix_kernel PUBLIC c_std_23)
 target_compile_features(matrix_kernel PUBLIC cxx_std_26)
 
 target_compile_options(matrix_kernel PRIVATE
-    -ffreestanding
-    -Wall
-    -Wextra
+    # -ffreestanding
+    # -Wall
+    # -fPIC
+    # -Wextra
+    -target x86_64-unknown-windows 
+        -ffreestanding 
+        -fshort-wchar 
+        -mno-red-zone 
+        -I/usr/include
 )
 
-target_link_options(matrix_kernel PRIVATE 
-    -nostdlib 
-    -ffreestanding
-    -T ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld
+target_link_options(matrix_kernel PRIVATE
+    -target x86_64-unknown-windows
+    -nostdlib
+    -Wl,-entry:efi_main
+    -Wl,-subsystem:efi_application
+    -fuse-ld=lld-link
+    # -nostdlib 
+    # -ffreestanding
+    # -l:libgnuefi.a 
+    # -l:libefi.a
+    # -shared
+    # -T ${CMAKE_CURRENT_SOURCE_DIR}/linker.ld
 )
 
 set(IMAGE_NAME matrix_kernel.img)
 set(ISO_PATH ${CMAKE_CURRENT_BINARY_DIR}/iso_build)
 set(EXE_NAME matrix_kernel)
 
-
 add_custom_command(
     DEPENDS matrix_kernel
     OUTPUT ${IMAGE_NAME}
 
-    COMMAND  mkdir -p ${ISO_PATH}/boot/grub/
-    COMMAND  cp ${EXE_NAME} ${ISO_PATH}/boot/${EXE_NAME}
-    COMMAND  cp ${CMAKE_CURRENT_SOURCE_DIR}/grub.cfg ${ISO_PATH}/boot/grub/grub.cfg
-    COMMAND  grub-mkrescue -o ${IMAGE_NAME} ${ISO_PATH}
+    # Create empty 1.44MB FAT image
+    COMMAND dd if=/dev/zero of=${IMAGE_NAME} bs=1k count=1440
 
-    COMMENT "Creating FAT image with EFI bootloader"
+    # Format the image as FAT12
+    COMMAND mformat -i ${IMAGE_NAME} -f 1440 ::
+
+    # Create EFI directories
+    COMMAND mmd -i ${IMAGE_NAME} ::/EFI
+    COMMAND mmd -i ${IMAGE_NAME} ::/EFI/BOOT
+
+    # Copy your UEFI app
+    COMMAND mcopy -i ${IMAGE_NAME} ${EXE_NAME} ::/EFI/BOOT/BOOTX64.EFI
+    COMMAND mcopy -i ${IMAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/startup.nsh ::
+
+    COMMENT "Creating UEFI FAT image with BOOTX64.EFI"
 )
 
-add_custom_target(create_image ALL
+add_custom_target(build_image ALL
     DEPENDS ${IMAGE_NAME}
 )
 

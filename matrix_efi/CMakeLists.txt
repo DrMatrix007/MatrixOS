@@ -18,7 +18,6 @@ target_compile_features(matrix_efi PUBLIC cxx_std_26)
 
 target_compile_options(matrix_efi PRIVATE
     -target x86_64-unknown-windows
-    -ffreestanding
     -fshort-wchar
     -mno-red-zone
 )
@@ -28,7 +27,6 @@ target_link_options(matrix_efi PRIVATE
     -lgnuefi
     -fuse-ld=lld-link
     -target x86_64-unknown-windows
-    -nostdlib
     -Wl,-subsystem:efi_application
 
 )

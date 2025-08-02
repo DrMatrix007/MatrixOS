@@ -2,7 +2,6 @@
 #define MATRIX_EFI_MIO
 
 /// Matrix Input Output
-
 void print(const wchar_t* data);
 
 

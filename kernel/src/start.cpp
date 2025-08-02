@@ -18,8 +18,7 @@ extern "C" void _start()
     asm volatile(
         "mov %0, %%rsp\n"
         :
-        : "r"(kernel_stack + sizeof(kernel_stack))
-        : "rsp");
+        : "r"(kernel_stack + sizeof(kernel_stack)));
 
 
     // 3. Enable PAE (bit 5) in CR4

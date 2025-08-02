@@ -3,7 +3,7 @@
 
 /// Matrix Input Output
 
-void printf(const wchar_t* data);
+void print(const wchar_t* data);
 
 
 #endif // MATRIX_EFI_MIO

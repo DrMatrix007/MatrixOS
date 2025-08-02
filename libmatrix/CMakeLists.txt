@@ -23,6 +23,7 @@ target_compile_options(LibMatrix PRIVATE
 target_link_options(LibMatrix PRIVATE
     -nostdlib
     -ffreestanding
+    
 )
 
 

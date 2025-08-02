@@ -17,16 +17,16 @@ target_compile_features(matrix_kernel PUBLIC c_std_23)
 target_compile_features(matrix_kernel PUBLIC cxx_std_26)
 
 target_compile_options(matrix_kernel PUBLIC
-    -target x86_64-unknown-windows 
-    -ffreestanding 
-    -fshort-wchar 
-    -mno-red-zone 
+-target x86_64-unknown-windows
+-ffreestanding
+-fshort-wchar
+-mno-red-zone
 )
 
 target_link_options(matrix_kernel PUBLIC
     -target x86_64-unknown-windows
     -nostdlib
-    -Wl,-entry:efi_main
+    -Wl,-entry:efi_main 
     -Wl,-subsystem:efi_application
     -fuse-ld=lld-link
 

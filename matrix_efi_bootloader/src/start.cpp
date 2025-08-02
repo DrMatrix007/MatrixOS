@@ -33,7 +33,6 @@ EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable
 
     for (int i = 0; i < gop->Mode->FrameBufferSize; i += sizeof(pixel))
     {
-        // pixel.Blue+=1;
         *(EFI_GRAPHICS_OUTPUT_BLT_PIXEL *)((char *)gop->Mode->FrameBufferBase + i) = pixel;
     }
 

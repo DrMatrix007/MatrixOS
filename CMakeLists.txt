@@ -8,10 +8,11 @@ set(EFI_BOOTLOADER_PROJECT_PATH matrix_efi_bootloader)
 set(BOOTLOADER_BIN ${EFI_BOOTLOADER_PROJECT_PATH}/matrix_efi_bootloader)
 set(KERNEL_PROJECT_PATH matrix_kernel)
 set(KERNEL_BIN ${KERNEL_PROJECT_PATH}/matrix_kernel)
+set(STANDARD_MATRIX_PROJECT_PATH standard_matrix)
 
+add_subdirectory(${STANDARD_MATRIX_PROJECT_PATH})
 add_subdirectory(${EFI_BOOTLOADER_PROJECT_PATH})
 add_subdirectory(${KERNEL_PROJECT_PATH})
-
 
 target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
 target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)

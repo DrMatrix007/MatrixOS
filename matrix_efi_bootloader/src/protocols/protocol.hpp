@@ -11,7 +11,8 @@ namespace matrix_efi
     concept EfiProtocol = requires() {
         { T::guid() };
     };
-}
 
+    
+}
 
 #endif // MATRIX_EFI_PROTOCOL_H

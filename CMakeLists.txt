@@ -2,8 +2,6 @@ cmake_minimum_required(VERSION 3.31)
 
 project(matrix_kernel_runner)
 
-set(CMAKE_CXX_STANDARD 26)
-
 add_executable(matrix_kernel_runner main.cpp)
 
 set(EFI_BOOTLOADER_PROJECT_PATH matrix_efi_bootloader)
@@ -14,11 +12,20 @@ set(KERNEL_BIN ${KERNEL_PROJECT_PATH}/matrix_kernel)
 add_subdirectory(${EFI_BOOTLOADER_PROJECT_PATH})
 add_subdirectory(${KERNEL_PROJECT_PATH})
 
+
+target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
+target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
+
+target_compile_features(matrix_kernel PUBLIC c_std_23)
+target_compile_features(matrix_kernel PUBLIC cxx_std_26)
+
+
+
+
 # variables for commands
 set(IMAGE_NAME matrix_kernel.img)
 set(ISO_PATH ${CMAKE_CURRENT_BINARY_DIR}/iso_build)
 set(EXE_NAME matrix_efi_bootloader/matrix_efi_bootloader)
-
 
 # commands
 add_custom_command(

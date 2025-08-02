@@ -1,8 +1,9 @@
 #include <efi.h>
 #include <efilib.h>
 
-#include "mefi_start.hpp"
+#include "start.hpp"
 #include "mio.hpp"
+#include "protocols/protocol.hpp"
 
 EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {

@@ -8,13 +8,14 @@ file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
 
 add_executable(matrix_efi_bootloader ${SRC})
 
+target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
+target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
+
 target_include_directories(matrix_efi_bootloader PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
 target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/")
 target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/x86_64")
 target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/protocol")
 
-target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
-target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
 
 target_compile_options(matrix_efi_bootloader PRIVATE
     -target x86_64-unknown-windows

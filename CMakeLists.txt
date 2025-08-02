@@ -22,10 +22,14 @@ set(EXE_NAME matrix_efi_bootloader/matrix_efi_bootloader)
 
 # commands
 add_custom_command(
-    DEPENDS matrix_kernel_runner
     OUTPUT OVMF.fd
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/OVMF.4m.fd ${CMAKE_CURRENT_BINARY_DIR}/OVMF.fd
 )
+add_custom_target(copy_ovmf ALL
+    DEPENDS OVMF.fd
+)
+
+
 add_custom_command(
     OUTPUT ${IMAGE_NAME}
 
@@ -44,7 +48,7 @@ add_custom_command(
     COMMAND mcopy -i ${IMAGE_NAME} ${KERNEL_BIN} ::/EFI/BOOT/matrix_kernel
     COMMAND mcopy -i ${IMAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${EFI_BOOTLOADER_PROJECT_PATH}/startup.nsh ::
 
-    COMMENT "Creating UEFI FAT image with BOOTX64.EFI"
+    COMMENT "Creating UEFI FAT image"
 )
 
 add_custom_target(build_image ALL
@@ -52,7 +56,3 @@ add_custom_target(build_image ALL
 )
 
 set(MATRIX_IMAGE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${IMAGE_NAME})
-
-add_custom_target(copy_ovmf ALL
-    DEPENDS OVMF.fd
-)

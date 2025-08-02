@@ -1,7 +1,7 @@
 #if !defined(_MATRIX_OS_MULTIBOOT_HEADER)
 #define _MATRIX_OS_MULTIBOOT_HEADER
 
-#include <efi.h>
+#include <stdint.h>
 
 constexpr uint32_t MULTIBOOT_MAGIC    = 0x1BADB002;
 constexpr uint32_t MULTIBOOT_FLAG     = (1 << 0) | (1 << 1);

@@ -6,14 +6,52 @@ set(CMAKE_CXX_STANDARD 26)
 
 add_executable(matrix_kernel_runner main.cpp)
 
-add_subdirectory(./matrix_efi)
-add_subdirectory(./kernel)
+set(EFI_BOOTLOADER_PROJECT_PATH matrix_efi_bootloader)
+set(BOOTLOADER_BIN ${EFI_BOOTLOADER_PROJECT_PATH}/matrix_efi_bootloader)
+set(KERNEL_PROJECT_PATH matrix_kernel)
+set(KERNEL_BIN ${KERNEL_PROJECT_PATH}/matrix_kernel)
 
+add_subdirectory(${EFI_BOOTLOADER_PROJECT_PATH})
+add_subdirectory(${KERNEL_PROJECT_PATH})
+
+# variables for commands
+set(IMAGE_NAME matrix_kernel.img)
+set(ISO_PATH ${CMAKE_CURRENT_BINARY_DIR}/iso_build)
+set(EXE_NAME matrix_efi_bootloader/matrix_efi_bootloader)
+
+
+# commands
 add_custom_command(
     DEPENDS matrix_kernel_runner
     OUTPUT OVMF.fd
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/OVMF.4m.fd ${CMAKE_CURRENT_BINARY_DIR}/OVMF.fd
 )
+add_custom_command(
+    OUTPUT ${IMAGE_NAME}
+
+    # Create empty 1.44MB FAT image
+    COMMAND dd if=/dev/zero of=${IMAGE_NAME} bs=1k count=1440
+
+    # Format the image as FAT12
+    COMMAND mformat -i ${IMAGE_NAME} -f 1440 ::
+
+    # Create EFI directories
+    COMMAND mmd -i ${IMAGE_NAME} ::/EFI
+    COMMAND mmd -i ${IMAGE_NAME} ::/EFI/BOOT
+
+    # Copy your UEFI app
+    COMMAND mcopy -i ${IMAGE_NAME} ${BOOTLOADER_BIN} ::/EFI/BOOT/BOOTX64.EFI
+    COMMAND mcopy -i ${IMAGE_NAME} ${KERNEL_BIN} ::/EFI/BOOT/matrix_kernel
+    COMMAND mcopy -i ${IMAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${EFI_BOOTLOADER_PROJECT_PATH}/startup.nsh ::
+
+    COMMENT "Creating UEFI FAT image with BOOTX64.EFI"
+)
+
+add_custom_target(build_image ALL
+    DEPENDS ${IMAGE_NAME}
+)
+
+set(MATRIX_IMAGE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${IMAGE_NAME})
 
 add_custom_target(copy_ovmf ALL
     DEPENDS OVMF.fd

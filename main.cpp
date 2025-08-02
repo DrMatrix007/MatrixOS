@@ -3,5 +3,5 @@
 
 int main()
 {
-    int result = std::system("qemu-system-x86_64  -drive if=pflash,format=raw,readonly=on,file=OVMF.fd  -cdrom kernel/matrix_kernel.img");
+    return std::system("qemu-system-x86_64  -drive if=pflash,format=raw,readonly=on,file=OVMF.fd  -cdrom matrix_kernel.img");
 }

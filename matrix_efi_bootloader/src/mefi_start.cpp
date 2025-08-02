@@ -4,7 +4,7 @@
 #include "mefi_start.hpp"
 #include "mio.hpp"
 
-EFI_STATUS setup(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
     EFI_STATUS Status = EFI_SUCCESS;
     EFI_INPUT_KEY Key;

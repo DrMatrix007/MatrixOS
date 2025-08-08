@@ -7,27 +7,53 @@
 #include "type_traits.hpp"
 #include "mem_utils.hpp"
 #include <new>
-#include <bit>
+#include <memory>
 
 namespace mst
 {
+    template <typename... types>
+    union variant_storage;
 
-    template <uint64 size, uint64 align>
-    struct aligned_storage
+    template <typename first, typename... rest>
+    union variant_storage<first, rest...>
     {
-
     public:
-        constexpr aligned_storage() = default;
+        template <typename type>
+        constexpr static variant_storage<first, rest...> from(remove_reference_t<type> &&t);
+        constexpr static variant_storage<first, rest...> from(first &&t);
 
-        constexpr void *as_ptr();
+        constexpr variant_storage(first head);
+        constexpr variant_storage(variant_storage &&) {};
+        constexpr ~variant_storage() {}
 
-        template <smaller_than<size, align> T>
-        constexpr T *as_ptr();
+        template <typename T>
+        constexpr void init(remove_reference_t<T> &&t);
 
-        template <smaller_than<size, align> T>
-        constexpr const T *as_ptr() const;
+        template <typename T>
+        T *as_ptr();
 
-        alignas(align) unsigned char m_data[size];
+    private:
+        first m_head;
+        variant_storage<rest...> m_tail;
+    };
+    template <typename first>
+    union variant_storage<first>
+    {
+    public:
+        constexpr variant_storage(first head);
+        constexpr variant_storage(variant_storage &&){};
+        constexpr ~variant_storage(){}
+        template<typename type>
+        constexpr static variant_storage<type> from(first &&t);
+        constexpr static variant_storage<first> from(first &&t);
+
+
+
+        template <typename T>
+        T *as_ptr();
+
+    private:
+        first m_head;
     };
 
     template <typename... types>
@@ -37,9 +63,10 @@ namespace mst
     public:
         template <typename type>
             requires(find_type_index_v<type, types...> >= 0)
-        constexpr variant(type &&arg);
+        static constexpr variant<types...> from(remove_reference_t<type> &&arg);
 
     private:
+        constexpr variant(uint64 index, variant_storage<types...> storage);
         static constexpr uint64 size = max(sizeof(types)...);
         static constexpr uint64 align = max(alignof(types)...);
 
@@ -47,58 +74,30 @@ namespace mst
         template <uint64 index>
         constexpr void destruct_value_impl();
 
-        aligned_storage<size, align> m_storage;
+        variant_storage<types...> m_storage;
         uint64 m_index;
     };
 
-    template <typename... types>
-        requires(is_unique_tuple_v<types...>)
-    template <typename type>
-        requires(find_type_index_v<type, types...> >= 0)
-    constexpr variant<types...>::variant(type &&arg)
-    {
-        m_index = find_type_index_v<type, types...>;
-        type *ptr = (type *)m_storage.as_ptr();
-        new (ptr) type(move(arg));
-    }
-    template <uint64 size, uint64 align>
-    constexpr inline void *aligned_storage<size, align>::as_ptr()
-    {
-        void *ptr = (void *)&m_data[0];
-        unsigned long long val;
-
-        void *ptr1 = &ptr;
-        void *ptr2 = &val;
-
-        unsigned long long *ptr3 = (unsigned long long*)&ptr;
-        unsigned long long *ptr4 = (unsigned long long*)&val;
-
-        return (void *)ptr;
-    }
-
-    template <uint64 size, uint64 align>
-    template <smaller_than<size, align> T>
-    constexpr inline T *aligned_storage<size, align>::as_ptr()
-    {
-        // void* ptr = as_ptr();
-        // void** ptr1 = &ptr;
-        // T*
-        return nullptr;
-        // return reinterpret_cast<T*>(&m_data[0]);;
-    }
-
-    template <uint64 size, uint64 align>
-    template <smaller_than<size, align> T>
-    constexpr inline const T *aligned_storage<size, align>::as_ptr() const
-    {
-        return static_cast<const T *>(static_cast<const void *>(&m_data[0]));
-    }
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     constexpr inline void variant<types...>::destruct_value()
     {
         destruct_value_impl<0>();
     }
+
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
+    template <typename type>
+        requires(find_type_index_v<type, types...> >= 0)
+
+    inline constexpr variant<types...> variant<types...>::from(remove_reference_t<type> &&arg)
+    {
+        variant_storage<types...> storage = move(variant_storage<types...>::template from<type>(move(arg)));
+        variant v(find_type_index_v<type, types...>, move(storage));
+
+        return move(v);
+    }
+
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     template <uint64 index>
@@ -108,11 +107,38 @@ namespace mst
         {
             if (m_index == index)
             {
-                m_storage.template as_ptr<type_index_t<index, types...>>();
             }
             destruct_value_impl<index + 1>();
         }
     }
+
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
+    constexpr variant<types...>::variant(uint64 index, variant_storage<types...> storage) : m_storage(move(storage)), m_index(index)
+    {
+    }
+
+    template <typename first, typename... rest>
+    inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(first &&t)
+    {
+        return variant_storage<first, rest...>(move(t));
+    }
+
+
+
+    template <typename first, typename... rest>
+    template <typename type>
+    inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(remove_reference_t<type> &&t)
+    {
+        return variant_storage<first, rest...>(variant_storage<rest...>::template from<type>(move(t)));
+    }
+
+    template<typename first>
+    inline constexpr variant_storage<first> variant_storage<first>::from(first &&t)
+    {
+        return variant_storage<first>(move(t));
+    }
+
 }
 
 #endif // STANDARD_MATRIX_VARIANT_H

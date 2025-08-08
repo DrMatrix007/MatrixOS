@@ -14,7 +14,7 @@ public:
 class A : public TestBase
 {
 public:
-    ~A()
+    constexpr ~A()
     {
         m_r = 1;
     }
@@ -22,7 +22,7 @@ public:
 class B : public TestBase
 {
 public:
-    ~B()
+    constexpr ~B()
     {
         m_r = 2;
     }
@@ -30,12 +30,11 @@ public:
 
 constexpr bool test()
 {
-    int v = 0;
+    int x = 0;
     {
-        variant<A, B> value(A{v});
+        variant<A, B> data = variant<A, B>::from<B>(B{x});
     }
-
-    return v == 1;
+    return x==2;
 }
 
 static_assert(test());

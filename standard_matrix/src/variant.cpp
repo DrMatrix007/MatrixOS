@@ -30,11 +30,12 @@ public:
 
 constexpr bool test()
 {
+    int y = 0;
     int x = 0;
     {
         variant<A, B> data = variant<A, B>::from<B>(B{x});
     }
-    return x==2;
+    return x == 2;
 }
 
 static_assert(test());

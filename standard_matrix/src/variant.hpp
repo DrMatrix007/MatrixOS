@@ -23,11 +23,9 @@ namespace mst
         constexpr static variant_storage<first, rest...> from(first &&t);
 
         constexpr variant_storage(first head);
+        constexpr variant_storage(variant_storage<rest...> tail);
         constexpr variant_storage(variant_storage &&) {};
         constexpr ~variant_storage() {}
-
-        template <typename T>
-        constexpr void init(remove_reference_t<T> &&t);
 
         template <typename T>
         T *as_ptr();
@@ -40,13 +38,12 @@ namespace mst
     union variant_storage<first>
     {
     public:
-        constexpr variant_storage(first head);
+        constexpr variant_storage(first&& head);
         constexpr variant_storage(variant_storage &&){};
         constexpr ~variant_storage(){}
-        template<typename type>
-        constexpr static variant_storage<type> from(first &&t);
-        constexpr static variant_storage<first> from(first &&t);
 
+        template<same_as<first> type>
+        constexpr static variant_storage<type> from(type &&t);
 
 
         template <typename T>
@@ -124,19 +121,30 @@ namespace mst
         return variant_storage<first, rest...>(move(t));
     }
 
-
+    template <typename first, typename... rest>
+    inline constexpr variant_storage<first, rest...>::variant_storage(variant_storage<rest...> tail) : m_tail(move(tail))
+    {
+    }
 
     template <typename first, typename... rest>
     template <typename type>
     inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(remove_reference_t<type> &&t)
     {
-        return variant_storage<first, rest...>(variant_storage<rest...>::template from<type>(move(t)));
+        return variant_storage<first, rest...>(move(variant_storage<rest...>::template from<remove_reference_t<type>>(move(t))));
     }
 
-    template<typename first>
-    inline constexpr variant_storage<first> variant_storage<first>::from(first &&t)
+        
+    template <typename first>
+    template <same_as<first> type>
+    inline constexpr variant_storage<type> variant_storage<first>::from(type &&t)
     {
         return variant_storage<first>(move(t));
+    }
+
+    template <typename first>
+    inline constexpr variant_storage<first>::variant_storage(first &&head): m_head(head)
+    {
+
     }
 
 }

@@ -20,37 +20,63 @@ namespace mst
     public:
         template <typename type>
         constexpr static variant_storage<first, rest...> from(remove_reference_t<type> &&t);
-        constexpr static variant_storage<first, rest...> from(first &&t);
 
-        constexpr variant_storage(first head);
-        constexpr variant_storage(variant_storage<rest...> tail);
-        constexpr variant_storage(variant_storage &&) {};
+        constexpr variant_storage();
+        constexpr variant_storage(first &&head);
+        constexpr variant_storage(variant_storage<rest...> &&tail);
+        constexpr variant_storage(variant_storage &&other) {};
+        constexpr variant_storage &operator=(variant_storage &&other) {};
         constexpr ~variant_storage() {}
 
-        template <typename T>
-        T *as_ptr();
+        constexpr void clear()
+        {
+            new (&m_tail) variant_storage<rest...>();
+        }
+
+        template <typename type>
+        type &&take()
+        {
+            if constexpr (same_as<first, type>)
+            {
+                return move(m_head);
+            }
+            else
+            {
+                return m_tail.template take<type>();
+            }
+        }
+
+        template <int64 index>
+        constexpr void destruct(int64 target_index);
 
     private:
         first m_head;
         variant_storage<rest...> m_tail;
+        char m_null;
     };
     template <typename first>
     union variant_storage<first>
     {
     public:
-        constexpr variant_storage(first&& head);
-        constexpr variant_storage(variant_storage &&){};
-        constexpr ~variant_storage(){}
+        constexpr variant_storage();
+        constexpr variant_storage(first &&head);
+        constexpr variant_storage(variant_storage &&) {};
+        constexpr variant_storage &operator=(variant_storage &&) { return *this; };
+        constexpr ~variant_storage() {}
 
-        template<same_as<first> type>
+        template <same_as<first> type>
         constexpr static variant_storage<type> from(type &&t);
 
-
-        template <typename T>
-        T *as_ptr();
+        template <int64 index>
+        constexpr void destruct(int64 target_index);
+        constexpr void clear()
+        {
+            new (&m_null) char();
+        }
 
     private:
         first m_head;
+        char m_null;
     };
 
     template <typename... types>
@@ -58,9 +84,29 @@ namespace mst
     class variant
     {
     public:
+        constexpr variant() : m_storage(), m_index(-1)
+        {
+        }
         template <typename type>
             requires(find_type_index_v<type, types...> >= 0)
         static constexpr variant<types...> from(remove_reference_t<type> &&arg);
+
+        constexpr variant(variant &&other) : m_storage(move(other.m_storage)), m_index(other.m_index)
+        {
+            other.m_storage.clear();
+            other.m_index = -1;
+        };
+        constexpr variant &operator=(variant &&other)
+        {
+            m_storage = move(other.m_storage);
+            m_index = other.m_index;
+
+            other.m_storage.clear();
+            other.m_index = -1;
+            return *this;
+        };
+
+        constexpr ~variant();
 
     private:
         constexpr variant(uint64 index, variant_storage<types...> storage);
@@ -72,7 +118,7 @@ namespace mst
         constexpr void destruct_value_impl();
 
         variant_storage<types...> m_storage;
-        uint64 m_index;
+        int64 m_index;
     };
 
     template <typename... types>
@@ -80,19 +126,6 @@ namespace mst
     constexpr inline void variant<types...>::destruct_value()
     {
         destruct_value_impl<0>();
-    }
-
-    template <typename... types>
-        requires(is_unique_tuple_v<types...>)
-    template <typename type>
-        requires(find_type_index_v<type, types...> >= 0)
-
-    inline constexpr variant<types...> variant<types...>::from(remove_reference_t<type> &&arg)
-    {
-        variant_storage<types...> storage = move(variant_storage<types...>::template from<type>(move(arg)));
-        variant v(find_type_index_v<type, types...>, move(storage));
-
-        return move(v);
     }
 
     template <typename... types>
@@ -116,13 +149,20 @@ namespace mst
     }
 
     template <typename first, typename... rest>
-    inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(first &&t)
+    inline constexpr variant_storage<first, rest...>::variant_storage(variant_storage<rest...> &&tail) : m_tail(move(tail))
     {
-        return variant_storage<first, rest...>(move(t));
+    }
+    template <typename first, typename... rest>
+    inline constexpr variant_storage<first, rest...>::variant_storage() : m_tail()
+    {
+    }
+    template <typename first>
+    inline constexpr variant_storage<first>::variant_storage() : m_null()
+    {
     }
 
     template <typename first, typename... rest>
-    inline constexpr variant_storage<first, rest...>::variant_storage(variant_storage<rest...> tail) : m_tail(move(tail))
+    inline constexpr variant_storage<first, rest...>::variant_storage(first &&head) : m_head(move(head))
     {
     }
 
@@ -130,10 +170,50 @@ namespace mst
     template <typename type>
     inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(remove_reference_t<type> &&t)
     {
-        return variant_storage<first, rest...>(move(variant_storage<rest...>::template from<remove_reference_t<type>>(move(t))));
+        if constexpr (same_as<first, remove_reference_t<type>>)
+        {
+            return variant_storage<first, rest...>(move(t));
+        }
+        else
+        {
+            return variant_storage<first, rest...>(move(variant_storage<rest...>::template from<type>(move(t))));
+        }
     }
 
-        
+    template <typename T>
+    constexpr void destroyObject(T *ptr)
+    {
+        ptr->~T(); // Calls the destructor of type T
+    }
+
+    template <typename first, typename... rest>
+    template <int64 index>
+    inline constexpr void variant_storage<first, rest...>::destruct(int64 target_index)
+    {
+        if (index == target_index)
+        {
+            destroyObject(&m_head);
+        }
+        else
+        {
+            m_tail.template destruct<index + 1>(target_index);
+        }
+    }
+
+    template <typename type>
+    template <int64 index>
+    constexpr void variant_storage<type>::destruct(int64 target_index)
+    {
+        if (target_index == -1)
+        {
+            return;
+        }
+        if (index == target_index)
+        {
+            destroyObject(&m_head);
+        }
+    }
+
     template <typename first>
     template <same_as<first> type>
     inline constexpr variant_storage<type> variant_storage<first>::from(type &&t)
@@ -142,9 +222,31 @@ namespace mst
     }
 
     template <typename first>
-    inline constexpr variant_storage<first>::variant_storage(first &&head): m_head(head)
+    inline constexpr variant_storage<first>::variant_storage(first &&head) : m_head(move(head))
+    {
+    }
+
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
+    constexpr variant<types...>::~variant()
+    {
+        if (m_index == 1)
+        {
+            m_storage.template destruct<0>(m_index);
+        }
+    }
+
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
+    template <typename type>
+        requires(find_type_index_v<type, types...> >= 0)
+
+    inline constexpr variant<types...> variant<types...>::from(remove_reference_t<type> &&arg)
     {
 
+        variant<types...> v(find_type_index_v<type, types...>, move(variant_storage<types...>(move(variant_storage<types...>::template from<type>(move(arg))))));
+
+        return move(v);
     }
 
 }

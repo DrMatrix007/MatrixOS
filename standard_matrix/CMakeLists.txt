@@ -3,8 +3,8 @@ project(standard_matrix VERSION 0.1.0 LANGUAGES C CXX)
 
 
 
-set(CMAKE_CXX_COMPILER /bin/clang++)
-set(CMAKE_C_COMPILER /bin/clang)
+# set(CMAKE_CXX_COMPILER /bin/clang++)
+# set(CMAKE_C_COMPILER /bin/clang)
 
 file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
 add_library(standard_matrix ${SRC})

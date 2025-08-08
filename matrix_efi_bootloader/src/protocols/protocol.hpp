@@ -2,7 +2,7 @@
 #define MATRIX_EFI_PROTOCOL_H
 
 #include <efi.h>
-#include "types.hpp"
+#include <type_traits.hpp>
 
 namespace matrix_efi
 {
@@ -10,25 +10,9 @@ namespace matrix_efi
 
     template<typename T>
     concept efi_protocol = requires() {
-        { T::guid() };
+        { T::guid() } -> mst::same_as<efi_guid>;
     };
-
-    class test_protocol 
-    {
-        public:
-        static efi_guid guid()
-        {
-            efi_guid res{};
-            return res;
-        };
-    };
-
-    template<efi_protocol T>
-    void test()
-    {
-        test<test_protocol>();
-    }
-
+    
 }
 
 #endif // MATRIX_EFI_PROTOCOL_H

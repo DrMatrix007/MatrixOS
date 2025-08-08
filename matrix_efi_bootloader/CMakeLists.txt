@@ -8,8 +8,10 @@ file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
 
 add_executable(matrix_efi_bootloader ${SRC})
 
-target_link_directories(standard_matrix PUBLIC INTERFACE)
-target_include_directories(standard_matrix PUBLIC INTERFACE)
+# target_link_directories(standard_matrix PUBLIC)
+# target_include_directories(matrix_efi_bootloader PUBLIC standard_matrix)
+target_link_libraries(matrix_efi_bootloader PRIVATE standard_matrix)
+
 
 target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
 target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
@@ -25,8 +27,9 @@ target_compile_options(matrix_efi_bootloader PRIVATE
     -fshort-wchar
     -ffreestanding
     -mno-red-zone
+    -msoft-float
 )
-
+    
 target_link_options(matrix_efi_bootloader PRIVATE
     -Wl,-entry:efi_main 
     -nostdlib

@@ -6,8 +6,10 @@ add_executable(matrix_kernel_runner main.cpp)
 
 set(EFI_BOOTLOADER_PROJECT_PATH matrix_efi_bootloader)
 set(BOOTLOADER_BIN ${EFI_BOOTLOADER_PROJECT_PATH}/matrix_efi_bootloader)
+
 set(KERNEL_PROJECT_PATH matrix_kernel)
 set(KERNEL_BIN ${KERNEL_PROJECT_PATH}/matrix_kernel)
+
 set(STANDARD_MATRIX_PROJECT_PATH standard_matrix)
 
 add_subdirectory(${STANDARD_MATRIX_PROJECT_PATH})

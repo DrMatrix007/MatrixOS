@@ -7,7 +7,6 @@ set(CMAKE_CXX_COMPILER /bin/clang++)
 set(CMAKE_C_COMPILER /bin/clang)
 
 file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
-
 add_library(standard_matrix ${SRC})
 
 target_include_directories(standard_matrix PUBLIC src/)

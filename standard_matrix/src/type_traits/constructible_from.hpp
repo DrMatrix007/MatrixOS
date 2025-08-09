@@ -1,7 +1,7 @@
 #if !defined(STANDARD_MATRIX_TYPE_TRAITS_CONSTRUCTIBLE_FROM_H)
 #define STANDARD_MATRIX_TYPE_TRAITS_CONSTRUCTIBLE_FROM_H
 
-#include "same.hpp"
+#include "is_same.hpp"
 #include "../move.hpp"
 namespace mst
 {

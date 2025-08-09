@@ -12,17 +12,6 @@ public:
     }
     int &m_r;
 };
-
-class A : public TestBase
-{
-public:
-    constexpr A(int &ref) : TestBase(ref) {}
-    constexpr A(A &&a) = default;
-    constexpr ~A()
-    {
-        // m_r = 1;
-    }
-};
 class B : public TestBase
 {
 public:
@@ -48,12 +37,23 @@ constexpr bool test()
     int y = 0;
     int x = 0;
     {
-        variant<A, B, C> data(move(B{3, x}));
+        variant<int16, B, uint64> data(B{3, x});
         if (x == 3)
         {
             return false;
         }
-        variant<A, B, C> data1 = (move(data));
+        variant<int16, B, uint64> data1 = move(data);
+        if (x == 3)
+        {
+            return false;
+        }
+        variant<int16, B, uint64> data2(move(data1));
+        if (x == 3)
+        {
+            return false;
+        }
+        variant<int16, B, uint64> data3 = (int16)10;
+        data3 = move(data2);
         if (x == 3)
         {
             return false;

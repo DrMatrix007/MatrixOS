@@ -18,40 +18,13 @@ namespace mst
     union variant_storage<first, rest...>
     {
     public:
-        template <typename type>
-        constexpr static variant_storage<first, rest...> from(type &&t);
-
         constexpr variant_storage();
-        template <not_same_as<variant_storage<first, rest...>> type>
+        template <in_group<first, rest...> type>
         constexpr variant_storage(type &&head);
-
-        constexpr variant_storage(variant_storage &&other, int64 index)
-        {
-            if (index == 0)
-            {
-                new (&m_head) first(mst::move(other.m_head));
-            }
-            else
-            {
-                new (&m_tail) variant_storage<rest...>(move(other.m_tail), index - 1);
-            }
-        };
+        constexpr variant_storage(variant_storage &&other, int64 index);
 
         constexpr ~variant_storage() {}
-        constexpr void clear();
-
-        template <typename type>
-        type &&take()
-        {
-            if constexpr (same_as<first, type>)
-            {
-                return move(m_head);
-            }
-            else
-            {
-                return m_tail.template take<type>();
-            }
-        }
+        constexpr void reset();
 
         template <int64 index>
         constexpr void destruct(int64 target_index);
@@ -78,10 +51,7 @@ namespace mst
 
         template <int64 index>
         constexpr void destruct(int64 target_index);
-        constexpr void clear()
-        {
-            new (&m_null) char();
-        }
+        constexpr void reset();
 
     private:
         first m_head;
@@ -112,12 +82,12 @@ namespace mst
 
         constexpr variant &operator=(variant &&other)
         {
-            static_assert(false, "not yet");
             destruct();
-            m_storage = move(other.m_storage);
+            m_storage.reset();
+            new(&m_storage)variant_storage<types...>(move(m_storage), other.m_index);
             m_index = other.m_index;
 
-            other.m_storage.clear();
+            other.m_storage.reset();
             other.m_index = -1;
             return *this;
         };
@@ -127,12 +97,6 @@ namespace mst
     private:
         constexpr void destruct();
         constexpr variant(uint64 index, variant_storage<types...> storage);
-        static constexpr uint64 size = max(sizeof(types)...);
-        static constexpr uint64 align = max(alignof(types)...);
-
-        constexpr void destruct_value();
-        template <uint64 index>
-        constexpr void destruct_value_impl();
 
         variant_storage<types...> m_storage;
         int64 m_index;
@@ -164,10 +128,10 @@ namespace mst
     }
 
     template <typename first, typename... rest>
-    template <not_same_as<variant_storage<first, rest...>> type>
+    template <in_group<first, rest...> type>
     inline constexpr variant_storage<first, rest...>::variant_storage(type &&val)
     {
-        if constexpr (same_as<first, type>)
+        if constexpr (same_as<first, remove_reference_t<type>>)
         {
             new (&m_head)(remove_reference_t<type>)(mst::move(val));
         }
@@ -226,6 +190,30 @@ namespace mst
         variant<types...> v(find_type_index_v<type, types...>, move(variant_storage<types...>(move(arg))));
 
         return move(v);
+    }
+
+    template <typename first, typename... rest>
+    constexpr variant_storage<first, rest...>::variant_storage(variant_storage &&other, int64 index)
+    {
+        if (index == 0)
+        {
+            new (&m_head) first(mst::move(other.m_head));
+        }
+        else
+        {
+            new (&m_tail) variant_storage<rest...>(move(other.m_tail), index - 1);
+        }
+    };
+
+    template <typename first>
+    inline constexpr void variant_storage<first>::reset()
+    {
+        new (&m_null) char();
+    }
+    template <typename first, typename... rest>
+    inline constexpr void variant_storage<first, rest...>::reset()
+    {
+        new (&m_tail) variant_storage<rest...>();
     }
 
 }

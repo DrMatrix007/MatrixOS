@@ -2,7 +2,7 @@
 #define STANDARD_MATRIX_MOVE_H
 
 #include "type_traits/remove_refrence.hpp"
-#include "type_traits/same.hpp"
+#include "type_traits/is_same.hpp"
 
 namespace mst
 {

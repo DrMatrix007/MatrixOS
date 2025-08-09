@@ -48,14 +48,15 @@ constexpr bool test()
     int y = 0;
     int x = 0;
     {
-        variant<A, B, C> data = variant<A, B, C>::from<B>(move(B{3, x}));
+        variant<A, B, C> data(move(B{3, x}));
         if (x == 3)
         {
             return false;
         }
         // variant<A, B> data1(move(data));
     }
-    return x == 0;
+    return x == 3;
+    // return true;
 }
 
 static_assert(test());

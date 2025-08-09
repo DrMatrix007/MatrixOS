@@ -19,13 +19,13 @@ namespace mst
     {
     public:
         template <typename type>
-        constexpr static variant_storage<first, rest...> from(remove_reference_t<type> &&t);
+        constexpr static variant_storage<first, rest...> from(type &&t);
 
         constexpr variant_storage();
-        constexpr variant_storage(first &&head);
-        constexpr variant_storage(variant_storage<rest...> &&tail);
+        template <typename type>
+        constexpr variant_storage(type &&head);
+
         constexpr variant_storage(variant_storage &&other) {};
-        constexpr variant_storage &operator=(variant_storage &&other) {};
         constexpr ~variant_storage() {}
 
         constexpr void clear()
@@ -61,7 +61,6 @@ namespace mst
         constexpr variant_storage();
         constexpr variant_storage(first &&head);
         constexpr variant_storage(variant_storage &&) {};
-        constexpr variant_storage &operator=(variant_storage &&) { return *this; };
         constexpr ~variant_storage() {}
 
         template <same_as<first> type>
@@ -84,20 +83,22 @@ namespace mst
     class variant
     {
     public:
-        constexpr variant() : m_storage(), m_index(-1)
+        template<typename type>
+        constexpr variant(type&& t) : m_storage(move(t)), m_index(find_type_index_v<type,types...>)
         {
         }
         template <typename type>
             requires(find_type_index_v<type, types...> >= 0)
         static constexpr variant<types...> from(remove_reference_t<type> &&arg);
 
-        constexpr variant(variant &&other) : m_storage(move(other.m_storage)), m_index(other.m_index)
+        constexpr variant(variant &&other) : m_storage(), m_index(other.m_index)
         {
-            other.m_storage.clear();
+            static_assert(false, "not yet");
             other.m_index = -1;
         };
         constexpr variant &operator=(variant &&other)
         {
+            static_assert(false, "not yet");
             m_storage = move(other.m_storage);
             m_index = other.m_index;
 
@@ -149,10 +150,6 @@ namespace mst
     }
 
     template <typename first, typename... rest>
-    inline constexpr variant_storage<first, rest...>::variant_storage(variant_storage<rest...> &&tail) : m_tail(move(tail))
-    {
-    }
-    template <typename first, typename... rest>
     inline constexpr variant_storage<first, rest...>::variant_storage() : m_tail()
     {
     }
@@ -162,21 +159,16 @@ namespace mst
     }
 
     template <typename first, typename... rest>
-    inline constexpr variant_storage<first, rest...>::variant_storage(first &&head) : m_head(move(head))
-    {
-    }
-
-    template <typename first, typename... rest>
     template <typename type>
-    inline constexpr variant_storage<first, rest...> variant_storage<first, rest...>::from(remove_reference_t<type> &&t)
+    inline constexpr variant_storage<first, rest...>::variant_storage(type &&val)
     {
-        if constexpr (same_as<first, remove_reference_t<type>>)
+        if constexpr (same_as<first, type>)
         {
-            return variant_storage<first, rest...>(move(t));
+            new (&m_head)(remove_reference_t<type>)(move(val));
         }
         else
         {
-            return variant_storage<first, rest...>(move(variant_storage<rest...>::template from<type>(move(t))));
+            new(&m_tail)variant_storage<rest...>(move(val));
         }
     }
 
@@ -230,9 +222,12 @@ namespace mst
         requires(is_unique_tuple_v<types...>)
     constexpr variant<types...>::~variant()
     {
-        if (m_index == 1)
+        
+        if (m_index != -1)
         {
             m_storage.template destruct<0>(m_index);
+        }else{
+            
         }
     }
 
@@ -244,7 +239,7 @@ namespace mst
     inline constexpr variant<types...> variant<types...>::from(remove_reference_t<type> &&arg)
     {
 
-        variant<types...> v(find_type_index_v<type, types...>, move(variant_storage<types...>(move(variant_storage<types...>::template from<type>(move(arg))))));
+        variant<types...> v(find_type_index_v<type, types...>, move(variant_storage<types...>(move(arg))));
 
         return move(v);
     }

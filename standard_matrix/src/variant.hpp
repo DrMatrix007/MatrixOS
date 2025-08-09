@@ -33,15 +33,12 @@ namespace mst
             }
             else
             {
-                new(&m_tail)variant_storage<rest...>(move(other.m_tail),index-1);
+                new (&m_tail) variant_storage<rest...>(move(other.m_tail), index - 1);
             }
         };
-        constexpr ~variant_storage() {}
 
-        constexpr void clear()
-        {
-            new (&m_tail) variant_storage<rest...>();
-        }
+        constexpr ~variant_storage() {}
+        constexpr void clear();
 
         template <typename type>
         type &&take()
@@ -70,10 +67,11 @@ namespace mst
     public:
         constexpr variant_storage();
         constexpr variant_storage(first &&head);
-        constexpr variant_storage(variant_storage &&data, int64 index) {
-            if(index == 0)
+        constexpr variant_storage(variant_storage &&data, int64 index)
+        {
+            if (index == 0)
             {
-                new(&m_head)first(data.m_head);
+                new (&m_head) first(data.m_head);
             }
         };
         constexpr ~variant_storage() {}
@@ -102,7 +100,7 @@ namespace mst
             other.m_index = -1;
         }
         template <typename type>
-        constexpr variant(type&&t)
+        constexpr variant(type &&t)
         {
             new (&m_storage) variant_storage<types...>(mst::move(t));
             m_index = find_type_index_v<type, types...>;
@@ -115,6 +113,7 @@ namespace mst
         constexpr variant &operator=(variant &&other)
         {
             static_assert(false, "not yet");
+            destruct();
             m_storage = move(other.m_storage);
             m_index = other.m_index;
 
@@ -126,6 +125,7 @@ namespace mst
         constexpr ~variant();
 
     private:
+        constexpr void destruct();
         constexpr variant(uint64 index, variant_storage<types...> storage);
         static constexpr uint64 size = max(sizeof(types)...);
         static constexpr uint64 align = max(alignof(types)...);
@@ -140,22 +140,11 @@ namespace mst
 
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
-    constexpr inline void variant<types...>::destruct_value()
+    inline constexpr void variant<types...>::destruct()
     {
-        destruct_value_impl<0>();
-    }
-
-    template <typename... types>
-        requires(is_unique_tuple_v<types...>)
-    template <uint64 index>
-    constexpr inline void variant<types...>::destruct_value_impl()
-    {
-        if constexpr (index < sizeof...(types))
+        if (m_index != -1)
         {
-            if (m_index == index)
-            {
-            }
-            destruct_value_impl<index + 1>();
+            m_storage.template destruct<0>(m_index);
         }
     }
 
@@ -191,7 +180,7 @@ namespace mst
     template <typename T>
     constexpr void destroyObject(T *ptr)
     {
-        ptr->~T(); // Calls the destructor of type T
+        ptr->~T();
     }
 
     template <typename first, typename... rest>
@@ -212,14 +201,6 @@ namespace mst
     template <int64 index>
     constexpr void variant_storage<type>::destruct(int64 target_index)
     {
-        if (target_index == -1)
-        {
-            return;
-        }
-        if (index == target_index)
-        {
-            destroyObject(&m_head);
-        }
     }
 
     template <typename first>
@@ -231,14 +212,7 @@ namespace mst
         requires(is_unique_tuple_v<types...>)
     constexpr variant<types...>::~variant()
     {
-
-        if (m_index != -1)
-        {
-            m_storage.template destruct<0>(m_index);
-        }
-        else
-        {
-        }
+        destruct();
     }
 
     template <typename... types>

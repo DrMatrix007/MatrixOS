@@ -29,7 +29,7 @@ namespace mst
         {
             if (index == 0)
             {
-                new (&m_head) first(move(other.m_head));
+                new (&m_head) first(mst::move(other.m_head));
             }
             else
             {
@@ -98,13 +98,13 @@ namespace mst
         constexpr variant(variant<types...> &&other)
         {
             m_index = other.m_index;
-            new (&m_storage) variant_storage<types...>(move(other.m_storage), m_index);
+            new (&m_storage) variant_storage<types...>(mst::move(other.m_storage), m_index);
             other.m_index = -1;
         }
         template <typename type>
         constexpr variant(type&&t)
         {
-            new (&m_storage) variant_storage<types...>(move(t));
+            new (&m_storage) variant_storage<types...>(mst::move(t));
             m_index = find_type_index_v<type, types...>;
         }
 
@@ -161,7 +161,7 @@ namespace mst
 
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
-    constexpr variant<types...>::variant(uint64 index, variant_storage<types...> storage) : m_storage(move(storage)), m_index(index)
+    constexpr variant<types...>::variant(uint64 index, variant_storage<types...> storage) : m_storage(mst::move(storage)), m_index(index)
     {
     }
 
@@ -180,11 +180,11 @@ namespace mst
     {
         if constexpr (same_as<first, type>)
         {
-            new (&m_head)(remove_reference_t<type>)(move(val));
+            new (&m_head)(remove_reference_t<type>)(mst::move(val));
         }
         else
         {
-            new (&m_tail) variant_storage<rest...>(move(val));
+            new (&m_tail) variant_storage<rest...>(mst::move(val));
         }
     }
 

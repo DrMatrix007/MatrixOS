@@ -30,7 +30,9 @@ struct B
 
 int main()
 {
-    mst::variant<A, B> data(A{});
-
+    mst::variant<std::unique_ptr<A>, B> data(std::make_unique<A>());
+    {
+        mst::variant<std::unique_ptr<A>, B> wgat(std::move(data));
+    }
     // return std::system("qemu-system-x86_64  -drive if=pflash,format=raw,readonly=on,file=OVMF.fd  -cdrom matrix_kernel.img");
 }

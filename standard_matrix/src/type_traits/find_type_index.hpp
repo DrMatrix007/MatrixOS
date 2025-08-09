@@ -8,6 +8,8 @@ namespace mst
     template <typename... types>
     class find_type_index
     {
+    public:
+        static constexpr uint64 value = -1;
     };
 
     template <typename... types>

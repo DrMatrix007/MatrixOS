@@ -24,6 +24,10 @@ namespace mst
 
     template <typename A, typename B>
     concept same_as = is_same_v<A, B>;
+
+
+    template <typename A, typename B>
+    concept not_same_as = !is_same_v<A, B>;
 };
 
 

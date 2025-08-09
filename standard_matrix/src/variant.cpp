@@ -53,10 +53,14 @@ constexpr bool test()
         {
             return false;
         }
-        // variant<A, B> data1(move(data));
+        variant<A, B, C> data1(move(data));
+        if (x == 3)
+        {
+            return false;
+        }
     }
     return x == 3;
-    // return true;
+    return true;
 }
 
 static_assert(test());

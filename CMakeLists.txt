@@ -22,7 +22,7 @@ target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
 target_compile_features(matrix_kernel PUBLIC c_std_23)
 target_compile_features(matrix_kernel PUBLIC cxx_std_26)
 
-
+target_link_libraries(matrix_kernel_runner standard_matrix)
 
 
 # variables for commands

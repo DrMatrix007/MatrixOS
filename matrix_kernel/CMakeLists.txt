@@ -1,5 +1,6 @@
 cmake_minimum_required(VERSION 4.0)
 
+
 project(matrix_kernel VERSION 0.1.0 LANGUAGES C CXX)
 
 set(CMAKE_CXX_COMPILER /bin/clang++)
@@ -21,17 +22,3 @@ target_compile_options(matrix_kernel PUBLIC
 target_link_options(matrix_kernel PUBLIC
     -nostdlib
 )
-
-
-
-
-
-
-include(CTest)
-enable_testing()
-
-set(CPACK_PROJECT_NAME ${PROJECT_NAME})
-set(CPACK_PROJECT_VERSION ${PROJECT_VERSION})
-
-
-include(CPack)

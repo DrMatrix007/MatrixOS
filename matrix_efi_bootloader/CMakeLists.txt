@@ -23,7 +23,7 @@ target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/protoc
 
 
 target_compile_options(matrix_efi_bootloader PRIVATE
-    -Wall
+#    -Wall
     -target x86_64-unknown-windows
     -fshort-wchar
     -ffreestanding

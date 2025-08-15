@@ -2,7 +2,7 @@
 
 using namespace mst;
 
-constexpr bool test()
+constexpr bool test1()
 {
     optional<int> data;
 
@@ -10,4 +10,4 @@ constexpr bool test()
 }
 
 
-static_assert(test());
+static_assert(test1());

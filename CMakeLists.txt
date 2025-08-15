@@ -62,3 +62,5 @@ add_custom_target(build_image ALL
 )
 
 set(MATRIX_IMAGE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${IMAGE_NAME})
+
+add_dependencies(matrix_kernel_runner matrix_efi_bootloader matrix_kernel standard_matrix build_image copy_ovmf)

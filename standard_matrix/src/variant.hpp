@@ -22,6 +22,7 @@ namespace mst
         template <in_group<first, rest...> type>
         constexpr variant_storage(type &&head);
         constexpr variant_storage(variant_storage &&other, int64 index);
+        constexpr variant_storage(const variant_storage &, int64 index);
 
         constexpr ~variant_storage() {}
         constexpr void reset();
@@ -48,6 +49,7 @@ namespace mst
         constexpr variant_storage();
         constexpr variant_storage(first &&head);
         constexpr variant_storage(variant_storage &&data, int64 index);
+        constexpr variant_storage(const variant_storage &data, int64 index);
         constexpr ~variant_storage() {}
 
         template <int64 index>
@@ -70,8 +72,9 @@ namespace mst
     class variant
     {
     public:
+        constexpr variant(const variant<types...> &other);
         constexpr variant(variant<types...> &&other);
-        template <typename type>
+        template <in_group<types...> type>
         constexpr variant(type &&t);
 
         template <typename type>
@@ -135,14 +138,37 @@ namespace mst
         }
     }
 
+    template <typename first, typename... rest>
+    inline constexpr variant_storage<first, rest...>::variant_storage(const variant_storage &other, int64 index)
+    {
+        if (index == 0)
+        {
+            new (&m_head) first(other.m_head);
+        }
+        else
+        {
+            new (&m_tail) variant_storage<rest...>(other.m_tail, index - 1);
+        }
+    }
+
     template <typename first>
     constexpr variant_storage<first>::variant_storage(variant_storage &&data, int64 index)
+    {
+        if (index == 0)
+        {
+            new (&m_head) first(mst::move(data.m_head));
+        }
+    }
+
+    template <typename first>
+    constexpr variant_storage<first>::variant_storage(const variant_storage &data, int64 index)
     {
         if (index == 0)
         {
             new (&m_head) first(data.m_head);
         }
     }
+
 
     template <typename first>
     inline constexpr variant_storage<first>::variant_storage(first &&head) : m_head(move(head))
@@ -241,9 +267,19 @@ namespace mst
         new (&m_storage) variant_storage<types...>(mst::move(other.m_storage), m_index);
     }
 
+
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
-    template <typename type>
+    constexpr variant<types...>::variant(const variant<types...> &other)
+    {
+        m_index = other.m_index;
+        new (&m_storage) variant_storage<types...>(other.m_storage, m_index);
+    }
+
+
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
+    template <in_group<types...> type>
     constexpr variant<types...>::variant(type &&t)
     {
         new (&m_storage) variant_storage<types...>(mst::move(t));
@@ -308,7 +344,7 @@ namespace mst
         }
         return nullptr;
     }
-    
+
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     template <typename type>

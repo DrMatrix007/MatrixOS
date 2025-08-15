@@ -84,22 +84,22 @@ namespace mst
         {
             destruct();
             m_storage.reset();
-            new(&m_storage)variant_storage<types...>(move(m_storage), other.m_index);
-            m_index = other.m_index;
 
-            other.m_storage.reset();
+            m_index = other.m_index;
+            new (&m_storage) variant_storage<types...>(move(other.m_storage), other.m_index);
             other.m_index = -1;
+
             return *this;
         };
 
         constexpr ~variant();
 
+        int64 m_index;
     private:
         constexpr void destruct();
         constexpr variant(uint64 index, variant_storage<types...> storage);
 
         variant_storage<types...> m_storage;
-        int64 m_index;
     };
 
     template <typename... types>
@@ -141,10 +141,10 @@ namespace mst
         }
     }
 
-    template <typename T>
-    constexpr void destroyObject(T *ptr)
+    template <typename type>
+    constexpr void destroyObject(type *ptr)
     {
-        ptr->~T();
+        ptr->~type();
     }
 
     template <typename first, typename... rest>
@@ -165,6 +165,10 @@ namespace mst
     template <int64 index>
     constexpr void variant_storage<type>::destruct(int64 target_index)
     {
+        if (index == target_index)
+        {
+            destroyObject(&m_head);
+        }
     }
 
     template <typename first>

@@ -36,10 +36,13 @@ constexpr bool test()
         variant<int16, B, uint64> data3 = (int16)10;
         data3 = move(data2);
         
-        data3 = (int16)10;
+        data3.try_get<B>()->m_x = 8;
 
+        data3 = (int16)10;
+        
+        *data3.try_get<int16>() = 0;
     }
-    return x == 10;
+    return x == 8;
 }
 
 static_assert(test());

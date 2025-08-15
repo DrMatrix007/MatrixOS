@@ -62,7 +62,7 @@ add_custom_command(
 )
 
 add_custom_target(build_image ALL
-    DEPENDS ${IMAGE_NAME}
+    DEPENDS ${IMAGE_NAME} matrix_efi_bootloader
 )
 
 set(MATRIX_IMAGE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${IMAGE_NAME})

@@ -43,17 +43,13 @@ add_custom_target(copy_ovmf ALL
 add_custom_command(
     OUTPUT ${IMAGE_NAME}
 
-    # Create empty 1.44MB FAT image
     COMMAND dd if=/dev/zero of=${IMAGE_NAME} bs=1k count=1440
 
-    # Format the image as FAT12
     COMMAND mformat -i ${IMAGE_NAME} -f 1440 ::
 
-    # Create EFI directories
     COMMAND mmd -i ${IMAGE_NAME} ::/EFI
     COMMAND mmd -i ${IMAGE_NAME} ::/EFI/BOOT
 
-    # Copy your UEFI app
     COMMAND mcopy -i ${IMAGE_NAME} ${BOOTLOADER_BIN} ::/EFI/BOOT/BOOTX64.EFI
     COMMAND mcopy -i ${IMAGE_NAME} ${KERNEL_BIN} ::/EFI/BOOT/matrix_kernel
     COMMAND mcopy -i ${IMAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${EFI_BOOTLOADER_PROJECT_PATH}/startup.nsh ::

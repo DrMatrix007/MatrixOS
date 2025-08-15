@@ -239,7 +239,6 @@ namespace mst
     {
         m_index = other.m_index;
         new (&m_storage) variant_storage<types...>(mst::move(other.m_storage), m_index);
-        other.m_index = -1;
     }
 
     template <typename... types>
@@ -270,7 +269,6 @@ namespace mst
 
         m_index = other.m_index;
         new (&m_storage) variant_storage<types...>(move(other.m_storage), other.m_index);
-        other.m_index = -1;
 
         return *this;
     }

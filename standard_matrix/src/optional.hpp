@@ -11,13 +11,21 @@ namespace mst
 
     template <typename type>
         requires(!same_as<type, optnull>)
-    class optional
+    class optional : private variant<type, optnull>
     {
     public:
-        optional(const optional&) = default;
-    private:
-        variant<type, optnull> m_data;
+        constexpr optional();
+
+        optional(optional&&) = default;
+        optional& operator=(optional&&) = default;
+    };
+
+    template <typename type>
+        requires(!same_as<type, optnull>)
+    constexpr optional<type>::optional() : variant<type, optnull>(optnull{})
+    {
     }
+
 }
 
 #endif // STANDARD_MATRIX_OPTIONAL_H

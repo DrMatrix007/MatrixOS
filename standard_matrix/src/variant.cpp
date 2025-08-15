@@ -15,8 +15,8 @@ public:
     {
         m_y = m_x;
     }
+    int& m_y; 
     int& m_x;
-    int& m_y;
 };
 class C
 {

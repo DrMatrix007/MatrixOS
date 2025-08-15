@@ -14,3 +14,6 @@ target_include_directories(standard_matrix PUBLIC src/)
 target_compile_features(standard_matrix PUBLIC c_std_23)
 target_compile_features(standard_matrix PUBLIC cxx_std_26)
 
+target_compile_options(standard_matrix PRIVATE -Wall)
+target_link_options(standard_matrix PRIVATE -Wall)
+

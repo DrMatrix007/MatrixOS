@@ -5,7 +5,7 @@
 #include "protocols/protocol.hpp"
 #include "system_table.hpp"
 
-// using namespace matrix_efi;
+using namespace matrix_efi;
 
 extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {
@@ -13,7 +13,8 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *
 
     ST = SystemTable;
 
-    // system_table table(SystemTable);
+    system_table table(SystemTable);
+
 
     SystemTable->ConOut->OutputString(SystemTable->ConOut, (wchar_t *)L"hello world!!!\n");
 

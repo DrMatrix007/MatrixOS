@@ -29,6 +29,7 @@ target_compile_options(matrix_efi_bootloader PRIVATE
     -ffreestanding
     -mno-red-zone
     -msoft-float
+    -fno-exceptions
 )
     
 target_link_options(matrix_efi_bootloader PRIVATE

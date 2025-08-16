@@ -20,6 +20,8 @@ constexpr bool test2()
     match(val, data)
     {
         return val == 10;
+    } else {
+        return false;
     }
     
     return false;

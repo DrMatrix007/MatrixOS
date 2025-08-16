@@ -6,26 +6,26 @@
 namespace mst
 {
     /// remove_refrence
-    template <typename T>
+    template <typename t>
     struct remove_reference
     {
-        using type = T;
+        using type = t;
     };
 
-    template <typename T>
-    struct remove_reference<T &>
+    template <typename t>
+    struct remove_reference<t &>
     {
-        using type = T;
+        using type = t;
     };
 
-    template <typename T>
-    struct remove_reference<T &&>
+    template <typename t>
+    struct remove_reference<t &&>
     {
-        using type = T;
+        using type = t;
     };
 
-    template <typename T>
-    using remove_reference_t = typename remove_reference<T>::type;
+    template <typename t>
+    using remove_reference_t = typename remove_reference<t>::type;
 }
 
 

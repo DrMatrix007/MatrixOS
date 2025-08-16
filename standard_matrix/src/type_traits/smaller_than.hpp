@@ -6,8 +6,8 @@ namespace mst
 {
 
     /// smaller than
-    template <typename T, uint64 size, uint64 align>
-    concept smaller_than = sizeof(T) <= size && alignof(T) <= align;
+    template <typename t, uint64 size, uint64 align>
+    concept smaller_than = sizeof(t) <= size && alignof(t) <= align;
 }
 
 #endif // STANDARD_MATRIX_TYPE_TRAITS_SMALLER_THAN_H

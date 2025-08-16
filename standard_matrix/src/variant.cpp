@@ -143,6 +143,34 @@ constexpr bool test_iter()
     return false;
 }
 
+constexpr bool test_match()
+{
+    variant<int, bool> data = true;
+
+    match(bool, value, data)
+    {
+        if (!value)
+        {
+            return false;
+        }
+    }
+    else
+    {
+        return false;
+    }
+
+    match(int, val, data)
+    {
+        return val == 1;
+    }
+    else match(bool, _, data)
+    {
+        return true;
+    }
+
+    return false;
+}
+
 static_assert(test_raii_move());
 static_assert(test_raii_copy());
 static_assert(test_basic());
@@ -150,3 +178,4 @@ static_assert(test_copy_move());
 static_assert(test_from());
 static_assert(test_reset());
 static_assert(test_iter());
+static_assert(test_match());

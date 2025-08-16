@@ -4,41 +4,43 @@
 namespace mst
 {
 
-    template <typename T>
+    template <typename t>
     struct variant_value_iterator
     {
-        T *ptr;
+        t *m_ptr;
 
-        constexpr variant_value_iterator(T *p) : ptr(p) {}
+        constexpr variant_value_iterator(t *p) : m_ptr(p) {}
 
-        constexpr T &operator*() const { return *ptr; }
-        constexpr T *operator->() const { return ptr; }
+        constexpr t &operator*() const { return *m_ptr; }
+        constexpr t *operator->() const { return m_ptr; }
 
         constexpr variant_value_iterator &operator++()
         {
-            ptr = nullptr; // advance past the single element
+            m_ptr = nullptr; // advance past the single element
             return *this;
         }
 
         constexpr bool operator!=(const variant_value_iterator &other) const
         {
-            return ptr != other.ptr;
+            return m_ptr != other.m_ptr;
         }
     };
 
     // View over the value of a specific type in the variant
-    template <typename T>
+    template <typename t>
     struct variant_view
     {
-        T *ptr;
+        t *m_ptr;
 
-        constexpr variant_view(T *p) : ptr(p) {}
+        constexpr variant_view(t *p) : m_ptr(p) {}
 
-        constexpr auto begin() { return variant_value_iterator<T>(ptr); }
-        constexpr auto end() { return variant_value_iterator<T>(nullptr); }
+        constexpr auto begin() { return variant_value_iterator<t>(m_ptr); }
+        constexpr auto end() { return variant_value_iterator<t>(nullptr); }
 
-        constexpr auto begin() const { return variant_value_iterator<const T>(ptr); }
-        constexpr auto end() const { return variant_value_iterator<const T>(nullptr); }
+        constexpr auto begin() const { return variant_value_iterator<const t>(m_ptr); }
+        constexpr auto end() const { return variant_value_iterator<const t>(nullptr); }
+
+        constexpr bool is_empty() { return m_ptr == nullptr; }
     };
 
 }

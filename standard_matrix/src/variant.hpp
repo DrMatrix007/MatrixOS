@@ -12,8 +12,6 @@
 #include "variant_iterator.hpp"
 #include "match.hpp"
 
-
-
 namespace mst
 {
     template <typename type>
@@ -44,14 +42,13 @@ namespace mst
         constexpr void destruct(int64 target_index);
 
         template <typename type>
-        constexpr type *try_get();
+        constexpr type *try_get(int64 index);
 
         template <typename type>
-        constexpr const type *try_get() const;
+        constexpr const type *try_get(int64 index) const;
 
     private:
         first m_head;
-        // When sizeof...(rest) == 0, this becomes a dummy `char` that we never read
         variant_storage<rest...> m_tail;
     };
 
@@ -164,30 +161,36 @@ namespace mst
 
     template <typename first, typename... rest>
     template <typename type>
-    inline constexpr type *variant_storage<first, rest...>::try_get()
+    inline constexpr type *variant_storage<first, rest...>::try_get(int64 index)
     {
         if constexpr (same_as<first, type>)
         {
-            return &m_head;
+            if (index == 0)
+            {
+                return &m_head;
+            }
         }
         else if constexpr (sizeof...(rest) > 0)
         {
-            return m_tail.template try_get<type>();
+            return m_tail.template try_get<type>(index - 1);
         }
         return nullptr;
     }
 
     template <typename first, typename... rest>
     template <typename type>
-    inline constexpr const type *variant_storage<first, rest...>::try_get() const
+    inline constexpr const type *variant_storage<first, rest...>::try_get(int64 index) const
     {
         if constexpr (same_as<first, type>)
         {
-            return &m_head;
+            if (index == 0)
+            {
+                return &m_head;
+            }
         }
         else if constexpr (sizeof...(rest) > 0)
         {
-            return m_tail.template try_get<type>();
+            return m_tail.template try_get<type>(index - 1);
         }
         return nullptr;
     }
@@ -270,7 +273,7 @@ namespace mst
     {
         if (find_type_index_v<type, types...> == m_index)
         {
-            return m_storage.template try_get<type>();
+            return m_storage.template try_get<type>(m_index);
         }
         return nullptr;
     }
@@ -282,7 +285,7 @@ namespace mst
     {
         if (find_type_index_v<type, types...> == m_index)
         {
-            return m_storage.template try_get<type>();
+            return m_storage.template try_get<type>(m_index);
         }
         return nullptr;
     }
@@ -292,7 +295,7 @@ namespace mst
     template <in_group<types...> type>
     constexpr variant_view<type> variant<types...>::view()
     {
-        return variant_view<type>(m_storage.template try_get<type>());
+        return variant_view<type>(m_storage.template try_get<type>(m_index));
     }
 
     template <typename... types>
@@ -300,7 +303,7 @@ namespace mst
     template <in_group<types...> type>
     constexpr variant_view<const type> variant<types...>::view() const
     {
-        return variant_view<const type>(m_storage.template try_get<type>());
+        return variant_view<const type>(m_storage.template try_get<type>(m_index));
     }
 
     template <typename type>

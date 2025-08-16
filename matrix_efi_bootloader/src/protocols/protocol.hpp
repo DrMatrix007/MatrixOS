@@ -8,9 +8,9 @@ namespace matrix_efi
 {
     using efi_guid = EFI_GUID;
 
-    template<typename T>
+    template<typename t>
     concept efi_protocol = requires() {
-        { T::guid() } -> mst::same_as<efi_guid>;
+        { t::guid() } -> mst::same_as<efi_guid>;
     };
     
 }

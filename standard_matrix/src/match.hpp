@@ -10,9 +10,9 @@
 #define match(...) _MATCH_EXPAND_CONCAT(_MATCH_DISPATCH_, _MATCH_COUNT(__VA_ARGS__))(__VA_ARGS__)
 
 #define _MATCH_DISPATCH_3(TYPE, VAR_NAME, DATA) \
-    for (auto&& VAR_NAME : (DATA).view<TYPE>())
+    if(!(DATA.view<TYPE>()).is_empty()) for (auto&& VAR_NAME : (DATA).view<TYPE>())
 
 #define _MATCH_DISPATCH_2(VAR_NAME, DATA) \
-    for (auto&& VAR_NAME : (DATA).view())
+    if(!(DATA.view()).is_empty()) for (auto&& VAR_NAME : (DATA).view())
 
 #endif // STANDARD_MATRIX_MATCH_H

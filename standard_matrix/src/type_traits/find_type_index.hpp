@@ -1,7 +1,8 @@
-#if !defined(STANDARD_MATRIX_TYPE_TRAITS_FIND_TYPE_INDEX_H)
+#ifndef STANDARD_MATRIX_TYPE_TRAITS_FIND_TYPE_INDEX_H
 #define STANDARD_MATRIX_TYPE_TRAITS_FIND_TYPE_INDEX_H
 
 #include "int_types.hpp"
+
 namespace mst
 {
     /// find_type_index
@@ -28,7 +29,6 @@ namespace mst
     public:
         static constexpr uint64 value = 0;
     };
-
 }
 
 #endif // STANDARD_MATRIX_TYPE_TRAITS_FIND_TYPE_INDEX_H

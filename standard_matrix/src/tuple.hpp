@@ -1,11 +1,10 @@
-#if !defined(STANDARD_MATRIX_TUPLE_H)
+#ifndef STANDARD_MATRIX_TUPLE_H
 #define STANDARD_MATRIX_TUPLE_H
 
 #include "int_types.hpp"
 
 namespace mst
 {
-
     template <typename... Ts>
     class tuple
     {
@@ -30,7 +29,8 @@ namespace mst
     };
 
     template <typename first, typename... rest>
-    constexpr inline tuple<first, rest...>::tuple(first first_val, rest... rest_val) : m_first(first_val), m_rest(rest_val...)
+    constexpr inline tuple<first, rest...>::tuple(first first_val, rest... rest_val)
+        : m_first(first_val), m_rest(rest_val...)
     {
     }
 
@@ -38,7 +38,6 @@ namespace mst
     template <uint64 I>
     constexpr inline const auto &tuple<first, rest...>::get() const
     {
-
         if constexpr (I == 0)
         {
             return m_first;
@@ -48,6 +47,7 @@ namespace mst
             return m_rest.template get<I - 1>();
         }
     }
+
     template <typename first, typename... rest>
     template <uint64 I>
     constexpr inline auto &tuple<first, rest...>::get()
@@ -61,7 +61,6 @@ namespace mst
             return m_rest.template get<I - 1>();
         }
     }
-
 }
 
 #endif // STANDARD_MATRIX_TUPLE_H

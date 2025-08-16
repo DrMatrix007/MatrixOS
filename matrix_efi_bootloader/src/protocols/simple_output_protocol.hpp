@@ -10,10 +10,14 @@ namespace mst
     class simple_output_protocol
     {
     public:
-    
+        simple_output_protocol(raw_simple_output_protocol* ptr);
+
+
+
+        
     private:
         raw_simple_output_protocol *m_raw;
-    }
+    };
 
 }
 

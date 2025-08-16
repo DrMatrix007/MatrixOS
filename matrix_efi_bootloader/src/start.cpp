@@ -5,7 +5,7 @@
 #include "protocols/protocol.hpp"
 #include "system_table.hpp"
 
-using namespace matrix_efi;
+// using namespace matrix_efi;
 
 extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
 {

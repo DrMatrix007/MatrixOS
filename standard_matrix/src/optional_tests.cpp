@@ -1,4 +1,5 @@
 #include "optional.hpp"
+#include "match.hpp"
 
 using namespace mst;
 
@@ -16,16 +17,19 @@ constexpr bool test1()
 constexpr bool test2()
 {
     optional<int> data = 10;
-    
+
     match(val, data)
     {
         return val == 10;
-    } else {
+    }
+    else
+    {
         return false;
     }
-    
+
     return false;
 }
 
 static_assert(test1());
 static_assert(test2());
+

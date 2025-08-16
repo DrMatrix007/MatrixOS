@@ -1,7 +1,7 @@
-#if !defined(STANDARD_MATRIX_MOVE_H)
+#ifndef STANDARD_MATRIX_MOVE_H
 #define STANDARD_MATRIX_MOVE_H
 
-#include "type_traits/remove_refrence.hpp"
+#include "type_traits/remove_reference.hpp"
 #include "type_traits/is_same.hpp"
 
 namespace mst
@@ -11,11 +11,13 @@ namespace mst
     {
         return static_cast<remove_reference_t<type> &&>(t);
     }
+
     template <typename type>
     constexpr type &&forward(remove_reference_t<type> &t) noexcept
     {
         return static_cast<type &&>(t);
     }
+
     template <typename type>
     constexpr type &&forward(remove_reference_t<type> &&t) noexcept
     {

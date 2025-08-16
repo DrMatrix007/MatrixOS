@@ -1,9 +1,8 @@
-#if !defined(STANDARD_MATRIX_VARIANT_ITERATOR_H)
-#define STANDARD_MATRIX_VARIANT_ITERATOR_H
+#ifndef MST_VARIANT_ITERATOR_H
+#define MST_VARIANT_ITERATOR_H
 
 namespace mst
 {
-
     template <typename t>
     struct variant_value_iterator
     {
@@ -16,7 +15,7 @@ namespace mst
 
         constexpr variant_value_iterator &operator++()
         {
-            m_ptr = nullptr; // advance past the single element
+            m_ptr = nullptr;
             return *this;
         }
 
@@ -26,7 +25,6 @@ namespace mst
         }
     };
 
-    // View over the value of a specific type in the variant
     template <typename t>
     struct variant_view
     {
@@ -40,9 +38,8 @@ namespace mst
         constexpr auto begin() const { return variant_value_iterator<const t>(m_ptr); }
         constexpr auto end() const { return variant_value_iterator<const t>(nullptr); }
 
-        constexpr bool is_empty() { return m_ptr == nullptr; }
+        constexpr bool is_empty() const { return m_ptr == nullptr; }
     };
-
 }
 
-#endif // STANDARD_MATRIX_VARIANT_ITERATOR_H
+#endif // MST_VARIANT_ITERATOR_H

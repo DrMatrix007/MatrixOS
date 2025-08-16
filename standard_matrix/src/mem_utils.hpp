@@ -1,12 +1,11 @@
-#if !defined(STANDARD_MATRIX_MEM_UTILS_H)
+#ifndef STANDARD_MATRIX_MEM_UTILS_H
 #define STANDARD_MATRIX_MEM_UTILS_H
 
 #include "int_types.hpp"
 
 namespace mst
 {
-
-    static constexpr void memcpy(void *dest, const void *src, uint64 count)
+    constexpr void memcpy(void *dest, const void *src, uint64 count)
     {
         auto d = static_cast<unsigned char *>(dest);
         auto s = static_cast<const unsigned char *>(src);
@@ -23,7 +22,6 @@ namespace mst
         memcpy(&dst, &src, sizeof(To));
         return dst;
     }
-
 }
 
 #endif // STANDARD_MATRIX_MEM_UTILS_H

@@ -1,4 +1,6 @@
 #include "variant.hpp"
+#include "match.hpp"
+
 using namespace mst;
 
 class b
@@ -8,6 +10,7 @@ public:
     constexpr b(b &&b) : m_y(b.m_y), m_x(b.m_x) {}
     constexpr b(const b &) = delete;
     constexpr ~b() { m_y = m_x; }
+
     int &m_y;
     int &m_x;
 };
@@ -22,10 +25,10 @@ constexpr bool test_raii_move()
     int x = 0;
     {
         variant<int16, b, uint64> d1(b{y, x});
-        variant<int16, b, uint64> d2 = std::move(d1);
-        variant<int16, b, uint64> d3(std::move(d2));
+        variant<int16, b, uint64> d2 = move(d1);
+        variant<int16, b, uint64> d3(move(d2));
         variant<int16, b, uint64> d4 = (int16)10;
-        d4 = std::move(d3);
+        d4 = move(d3);
         d4.try_get<b>()->m_x = 8;
         d4 = (int16)10;
         *d4.try_get<int16>() = 0;
@@ -44,6 +47,7 @@ public:
         if (m_active)
             m_a++;
     }
+
     int &m_a;
     bool m_active;
 };
@@ -96,7 +100,7 @@ constexpr bool test_copy_move()
         return false;
 
     variant<int, d> v3(d{55});
-    variant<int, d> v4(std::move(v3));
+    variant<int, d> v4(move(v3));
     if (!v4.try_get<d>() || v4.try_get<d>()->value != 55)
         return false;
 
@@ -129,9 +133,7 @@ constexpr bool test_iter()
     match(int, val, data)
     {
         if (val != 16)
-        {
             return false;
-        };
         data = true;
     }
 
@@ -150,9 +152,7 @@ constexpr bool test_match()
     match(bool, value, data)
     {
         if (!value)
-        {
             return false;
-        }
     }
     else
     {

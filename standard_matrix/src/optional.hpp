@@ -1,4 +1,4 @@
-#if !defined(STANDARD_MATRIX_OPTIONAL_H)
+#ifndef STANDARD_MATRIX_OPTIONAL_H
 #define STANDARD_MATRIX_OPTIONAL_H
 
 #include "match.hpp"
@@ -14,7 +14,6 @@ namespace mst
         requires(!same_as<type, nullopt>)
     class optional
     {
-
     public:
         constexpr optional();
         constexpr optional(const type &value);
@@ -46,21 +45,15 @@ namespace mst
 
     template <typename type>
         requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional() : m_variant(nullopt{})
-    {
-    }
+    constexpr optional<type>::optional() : m_variant(nullopt{}) {}
 
     template <typename type>
         requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional(const type &value) : m_variant(value)
-    {
-    }
+    constexpr optional<type>::optional(const type &value) : m_variant(value) {}
 
     template <typename type>
         requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional(type &&value) : m_variant(std::move(value))
-    {
-    }
+    constexpr optional<type>::optional(type &&value) : m_variant(move(value)) {}
 
     template <typename type>
         requires(!same_as<type, nullopt>)
@@ -102,7 +95,7 @@ namespace mst
     template <typename... Args>
     type &optional<type>::emplace(Args &&...args)
     {
-        m_variant = variant<type, nullopt>(type(std::forward<Args>(args)...));
+        m_variant = variant<type, nullopt>(type(args...));
         return *m_variant.template try_get<type>();
     }
 
@@ -115,7 +108,6 @@ namespace mst
 
     template <typename type>
         requires(!same_as<type, nullopt>)
-
     inline constexpr variant_view<const type> optional<type>::view() const
     {
         return m_variant.template view<type>();

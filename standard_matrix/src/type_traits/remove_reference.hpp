@@ -1,11 +1,10 @@
-#if !defined(STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFRENCE_H)
-#define STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFRENCE_H
-
+#ifndef STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFERENCE_H
+#define STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFERENCE_H
 
 #include "int_types.hpp"
+
 namespace mst
 {
-    /// remove_refrence
     template <typename t>
     struct remove_reference
     {
@@ -28,5 +27,4 @@ namespace mst
     using remove_reference_t = typename remove_reference<t>::type;
 }
 
-
-#endif // STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFRENCE_H
+#endif // STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFERENCE_H

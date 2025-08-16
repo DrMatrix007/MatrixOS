@@ -1,11 +1,11 @@
-#if !defined(STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE)
-#define STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE
+#ifndef STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE_H
+#define STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE_H
 
 #include "int_types.hpp"
 #include "is_same.hpp"
+
 namespace mst
 {
-    // unique_tuple
     template <typename... types>
     class is_unique_tuple
     {
@@ -29,5 +29,4 @@ namespace mst
     };
 }
 
-
-#endif // STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE
+#endif // STANDARD_MATRIX_TYPE_TRAITS_IS_UNIQUE_TUPLE_H

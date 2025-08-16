@@ -1,13 +1,13 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(standard_matrix VERSION 0.1.0 LANGUAGES C CXX)
 
+set(CMAKE_CXX_COMPILER /bin/clang++)
+set(CMAKE_C_COMPILER /bin/clang)
 
+file(GLOB_RECURSE SRC src/*.cpp gnu-efi-src/data.c)
+file(GLOB_RECURSE HEADRES src/*.hpp gnu-efi-src/data.c)
 
-# set(CMAKE_CXX_COMPILER /bin/clang++)
-# set(CMAKE_C_COMPILER /bin/clang)
-
-file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
-add_library(standard_matrix ${SRC})
+add_library(standard_matrix ${SRC} ${HEADRES})
 
 target_include_directories(standard_matrix PUBLIC src/)
 

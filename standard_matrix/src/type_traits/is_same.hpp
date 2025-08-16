@@ -2,32 +2,32 @@
 #define STANDARD_MATRIX_TYPE_TRAIT_SAME_H
 
 
-#include "int_types.hpp"
+#include "../int_types.hpp"
 namespace mst
 {
        /// is same
-    template <typename A, typename B>
+    template <typename type1, typename type2>
     class is_same
     {
     public:
         static constexpr bool value = false;
     };
-    template <typename A>
-    class is_same<A, A>
+    template <typename type1>
+    class is_same<type1, type1>
     {
     public:
         static constexpr bool value = true;
     };
 
-    template <typename A, typename B>
-    constexpr bool is_same_v = is_same<A, B>::value;
+    template <typename type1, typename type2>
+    constexpr bool is_same_v = is_same<type1, type2>::value;
 
-    template <typename A, typename B>
-    concept same_as = is_same_v<A, B>;
+    template <typename type1, typename type2>
+    concept same_as = is_same_v<type1, type2>;
 
 
-    template <typename A, typename B>
-    concept not_same_as = !is_same_v<A, B>;
+    template <typename type1, typename type2>
+    concept not_same_as = !is_same_v<type1, type2>;
 };
 
 

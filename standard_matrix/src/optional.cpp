@@ -4,10 +4,26 @@ using namespace mst;
 
 constexpr bool test1()
 {
-    optional<int> data;
+    optional<int> data = 10;
 
-    return true;
+    *data.try_get() = 5;
+
+    const optional<int> data1 = data;
+
+    return *data1.try_get() == 5;
 }
 
+constexpr bool test2()
+{
+    optional<int> data = 10;
+    
+    match(val, data)
+    {
+        return val == 10;
+    }
+    
+    return false;
+}
 
 static_assert(test1());
+static_assert(test2());

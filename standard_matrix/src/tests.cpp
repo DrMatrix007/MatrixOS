@@ -12,5 +12,3 @@ static_assert(data.get<2>() == 3);
 static_assert(is_unique_tuple_v<uint16>);
 static_assert(is_unique_tuple_v<uint16, uint32>);
 static_assert(!is_unique_tuple_v<uint16, uint32, uint16>);
-
-// constexpr variant<int16, int64> data1(1000000000);

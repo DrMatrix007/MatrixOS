@@ -11,15 +11,15 @@
 
 #include "stddef.h"
 
-#if __has_include(<new>)
-#include <new>
-#else
+// #if __has_include(<new>)
+// #include <new>
+// #else
 // for non std environents
 inline constexpr void *operator new(size_t, void *ptr) noexcept { return ptr; }
 inline constexpr void *operator new[](size_t, void *ptr) noexcept { return ptr; }
 inline constexpr void operator delete(void *, void *) noexcept {}
 inline constexpr void operator delete[](void *, void *) noexcept {}
-#endif
+// #endif
 
 namespace mst
 {
@@ -62,8 +62,7 @@ namespace mst
         variant_storage<rest...> m_tail;
     };
 
-    template <typename... types>
-        requires(is_unique_tuple_v<types...>)
+    template <typename... types> requires(is_unique_tuple_v<types...>)
     class variant
     {
     public:

@@ -6,12 +6,13 @@
 
 namespace mst
 {
-    class nullopt
+    class nullopt_t
     {
     };
 
-    template <typename type>
-        requires(!same_as<type, nullopt>)
+    constexpr nullopt_t nullopt{};
+
+    template <typename type> requires(!same_as<type, nullopt_t>)
     class optional
     {
     public:
@@ -39,86 +40,121 @@ namespace mst
 
         constexpr explicit operator bool() const;
 
+        constexpr optional &operator=(const type &value);
+        constexpr optional &operator=(type &&value);
+        constexpr optional &operator=(nullopt_t) noexcept;
+
     private:
-        variant<type, nullopt> m_variant;
+        variant<type, nullopt_t> m_variant;
     };
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional() : m_variant(nullopt{}) {}
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type>::optional() : m_variant(nullopt_t{})
+    {
+    }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional(const type &value) : m_variant(value) {}
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type>::optional(const type &value) : m_variant(value)
+    {
+    }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
-    constexpr optional<type>::optional(type &&value) : m_variant(move(value)) {}
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type>::optional(type &&value) : m_variant(move(value))
+    {
+    }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     constexpr bool optional<type>::has_value() const
     {
         return m_variant.template try_get<type>() != nullptr;
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     inline constexpr bool optional<type>::is_empty()
     {
         return !has_value();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     constexpr type *optional<type>::try_get()
     {
         return m_variant.template try_get<type>();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     constexpr const type *optional<type>::try_get() const
     {
         return m_variant.template try_get<type>();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     void optional<type>::reset()
     {
-        m_variant = variant<type, nullopt>(nullopt{});
+        m_variant = variant<type, nullopt_t>(nullopt);
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     template <typename... Args>
     type &optional<type>::emplace(Args &&...args)
     {
-        m_variant = variant<type, nullopt>(type(args...));
+        m_variant = variant<type, nullopt_t>(type(args...));
         return *m_variant.template try_get<type>();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     inline constexpr variant_view<type> optional<type>::view()
     {
         return m_variant.template view<type>();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     inline constexpr variant_view<const type> optional<type>::view() const
     {
         return m_variant.template view<type>();
     }
 
     template <typename type>
-        requires(!same_as<type, nullopt>)
+        requires(!same_as<type, nullopt_t>)
     constexpr optional<type>::operator bool() const
     {
         return has_value();
     }
+
+    template <typename type>
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type> &optional<type>::operator=(const type &value)
+    {
+        m_variant = variant<type, nullopt_t>(value);
+        return *this;
+    }
+
+    template <typename type>
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type> &optional<type>::operator=(type &&value)
+    {
+        m_variant = variant<type, nullopt_t>(move(value));
+        return *this;
+    }
+
+    template <typename type>
+        requires(!same_as<type, nullopt_t>)
+    constexpr optional<type> &optional<type>::operator=(nullopt_t) noexcept
+    {
+        m_variant = variant<type, nullopt_t>(nullopt);
+        return *this;
+    }
+
 }
 
 #endif // STANDARD_MATRIX_OPTIONAL_H

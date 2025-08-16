@@ -2,7 +2,7 @@
 #define MATRIX_EFI_PROTOCOL_H
 
 #include <efi.h>
-#include <type_traits.hpp>
+#include "type_traits.hpp"
 
 namespace matrix_efi
 {

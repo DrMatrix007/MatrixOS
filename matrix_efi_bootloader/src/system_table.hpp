@@ -5,11 +5,10 @@
 #include <efilib.h>
 #include <efiapi.h>
 
-#include "protocols/protocol.hpp"
-
-
-
 #include "optional.hpp"
+
+// #include "protocols/protocol.hpp"
+#include "protocols/simple_output_protocol.hpp"
 
 namespace matrix_efi
 {
@@ -17,22 +16,20 @@ namespace matrix_efi
     class system_table
     {
     public:
-        system_table(raw_system_table* ptr);
-
-        template<efi_protocol protocol>
-        protocol get_protocol();
+        system_table(raw_system_table *ptr);
+        // template <efi_protocol protocol>
+        // protocol get_protocol();
+        mst::optional<simple_output_protocol>& out();
     private:
-        
-        mst::optional<int> m_;
         raw_system_table *m_raw;
-    
+        mst::optional<simple_output_protocol> m_out;
     };
 
-    template <efi_protocol protocol>
-    inline protocol system_table::get_protocol()
-    {
-        // m_raw->BootServices.proto
-    }
+    // template <efi_protocol protocol>
+    // inline protocol system_table::get_protocol()
+    // {
+    //     // m_raw->BootServices.proto
+    // }
 
 }
 

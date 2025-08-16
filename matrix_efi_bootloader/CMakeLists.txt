@@ -9,8 +9,8 @@ file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
 add_executable(matrix_efi_bootloader ${SRC})
 
 # target_link_directories(standard_matrix PUBLIC)
-# target_include_directories(matrix_efi_bootloader PUBLIC standard_matrix)
-target_link_libraries(matrix_efi_bootloader PRIVATE standard_matrix)
+target_link_libraries(matrix_efi_bootloader PUBLIC standard_matrix)
+# target_include_directories(matrix_efi_bootloader PUBLIC ../standard_matrix/src/)
 
 
 target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)

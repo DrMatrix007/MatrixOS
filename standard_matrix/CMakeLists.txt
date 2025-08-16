@@ -8,8 +8,10 @@ file(GLOB_RECURSE SRC src/*.cpp gnu-efi-src/data.c)
 file(GLOB_RECURSE HEADRES src/*.hpp gnu-efi-src/data.c)
 
 add_library(standard_matrix ${SRC} ${HEADRES})
-
+include_directories(standard_matrix ${HEADRES})
 target_include_directories(standard_matrix PUBLIC src/)
+
+
 
 target_compile_features(standard_matrix PUBLIC c_std_23)
 target_compile_features(standard_matrix PUBLIC cxx_std_26)

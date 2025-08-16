@@ -14,9 +14,11 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *
     ST = SystemTable;
 
     system_table table(SystemTable);
-
-
-    SystemTable->ConOut->OutputString(SystemTable->ConOut, (wchar_t *)L"hello world!!!\n");
+    
+    match(output, table.out())
+    {
+        output.output_string((wchar_t*)L"lol bozo\n");
+    }
 
     return status;
 }

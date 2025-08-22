@@ -24,7 +24,8 @@ namespace mst
     public:
         constexpr optional();
         explicit constexpr optional(const_ref<type> value);
-        constexpr optional(type value);
+        constexpr optional(type&& value);
+        constexpr optional(const nullopt_t&): m_variant(nullopt_t{}) {}
 
         optional(const optional &) = default;
         optional(optional &&) = default;
@@ -68,7 +69,7 @@ namespace mst
 
     template <typename type>
         requires(!same_as<type, nullopt_t>)
-    constexpr optional<type>::optional(type value) : m_variant(move(value))
+    constexpr optional<type>::optional(type&& value) : m_variant(mst::forward<type>(value))
     {
     }
 

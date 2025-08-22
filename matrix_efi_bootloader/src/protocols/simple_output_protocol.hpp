@@ -3,8 +3,7 @@
 
 #include <efi.h>
 
-namespace matrix_efi
-{
+namespace matrix_efi {
     using raw_simple_output_protocol = EFI_SIMPLE_TEXT_OUT_PROTOCOL;
 
     class simple_output_protocol

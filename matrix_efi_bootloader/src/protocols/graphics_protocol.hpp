@@ -1,4 +1,4 @@
-#if !defined(MATRIX_EFI_GRAPHICS_PROTOCOL_H)
+#if MATRIX_EFI_GRAPHICS_PROTOCOL_H
 #define MATRIX_EFI_GRAPHICS_PROTOCOL_H
 
 #include "protocol.hpp"

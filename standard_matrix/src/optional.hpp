@@ -1,7 +1,6 @@
 #ifndef STANDARD_MATRIX_OPTIONAL_H
 #define STANDARD_MATRIX_OPTIONAL_H
 
-#include "match.hpp"
 #include "variant.hpp"
 
 namespace mst

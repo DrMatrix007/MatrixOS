@@ -2,12 +2,8 @@
 #define STANDARD_MATRIX_VARIANT_H
 
 #include "int_types.hpp"
-#include "math.hpp"
 #include "move.hpp"
-#include "type_traits.hpp"
-#include "mem_utils.hpp"
 #include "variant_iterator.hpp"
-#include "match.hpp"
 #include "ref.hpp"
 
 #include "stddef.h"

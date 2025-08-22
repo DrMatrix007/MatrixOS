@@ -6,7 +6,6 @@
 #include <efiapi.h>
 
 #include "optional.hpp"
-#include "protocols/protocol.hpp"
 #include "protocols/simple_output_protocol.hpp"
 
 namespace matrix_efi
@@ -18,7 +17,8 @@ namespace matrix_efi
         system_table(raw_system_table *ptr);
         // template <efi_protocol protocol>
         // protocol get_protocol();
-        mst::optional<simple_output_protocol&> out();
+        mst::optional<simple_output_protocol &> out();
+
     private:
         raw_system_table *m_raw;
         mst::optional<simple_output_protocol> m_out;

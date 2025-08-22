@@ -1,0 +1,1 @@
+see [[What is a boot loader?]] for what is a boot loader

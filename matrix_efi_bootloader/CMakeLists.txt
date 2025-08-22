@@ -23,24 +23,36 @@ target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/protoc
 
 
 target_compile_options(matrix_efi_bootloader PRIVATE
-#    -Wall
+    -Wall
     -target x86_64-unknown-windows
     -fshort-wchar
     -ffreestanding
     -mno-red-zone
     -msoft-float
     -fno-exceptions
+    # -ffreestanding
+    # -fno-stack-protector
+    # -fno-stack-check
+    # -fshort-wchar
+    # -mno-red-zone
+    # -maccumulate-outgoing-args
+    # -fpic
 )
-    
+
 target_link_options(matrix_efi_bootloader PRIVATE
     -Wall
-    -Wl,-entry:efi_main 
+    -Wl,-entry:efi_main
     -nostdlib
     -target x86_64-unknown-windows
     -Wl,-subsystem:efi_application
     -fuse-ld=lld-link
-)
 
+    # -shared
+    # -Bsymbolic
+    # -Lefi
+    # -Lgnuefi
+    # -T${CMAKE_CURRENT_SOURCE_DIR}/linker.ld /usr/lib/crt0-efi-x86_64.o
+)
 
 include(CTest)
 enable_testing()

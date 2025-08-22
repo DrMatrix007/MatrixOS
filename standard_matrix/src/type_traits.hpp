@@ -10,5 +10,6 @@
 #include "type_traits/smaller_than.hpp"
 #include "type_traits/type_index.hpp"
 #include "type_traits/is_type_in_group.hpp"
+#include "type_traits/enable_if.hpp"
 
 #endif // STANDARD_MATRIX_TYPES_H

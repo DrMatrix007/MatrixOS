@@ -17,7 +17,7 @@ target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
 target_compile_features(matrix_efi_bootloader PUBLIC cxx_std_26)
 
 target_include_directories(matrix_efi_bootloader PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/")
+target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi")
 target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/x86_64")
 target_include_directories(matrix_efi_bootloader PUBLIC "/usr/include/efi/protocol")
 

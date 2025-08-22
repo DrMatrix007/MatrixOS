@@ -1,17 +1,22 @@
 #ifndef MST_VARIANT_ITERATOR_H
 #define MST_VARIANT_ITERATOR_H
 
+#include "type_traits.hpp"
+
 namespace mst
 {
+
     template <typename t>
-    struct variant_value_iterator
+    class variant_value_iterator
     {
-        t *m_ptr;
+    private:
+        mst::remove_reference_t<t> *m_ptr;
 
-        constexpr variant_value_iterator(t *p) : m_ptr(p) {}
+    public:
+        constexpr variant_value_iterator(mst::remove_reference_t<t> *p) : m_ptr(p) {}
 
-        constexpr t &operator*() const { return *m_ptr; }
-        constexpr t *operator->() const { return m_ptr; }
+        constexpr mst::remove_reference_t<t> &operator*() const { return *m_ptr; }
+        constexpr mst::remove_reference_t<t> *operator->() const { return m_ptr; }
 
         constexpr variant_value_iterator &operator++()
         {
@@ -25,12 +30,17 @@ namespace mst
         }
     };
 
-    template <typename t>
-    struct variant_view
-    {
-        t *m_ptr;
 
-        constexpr variant_view(t *p) : m_ptr(p) {}
+    template <typename t>
+    class variant_view
+    {
+    private:
+        mst::remove_reference_t<t> *m_ptr;
+
+    public:
+        constexpr variant_view(mst::remove_reference_t<t>* p) : m_ptr(p) {}
+        // constexpr variant_view(ref<t> p) : m_ptr(p.get()) {}
+        // constexpr variant_view(const_ref<t> p) : m_ptr(&*p) {}
 
         constexpr auto begin() { return variant_value_iterator<t>(m_ptr); }
         constexpr auto end() { return variant_value_iterator<t>(nullptr); }
@@ -40,6 +50,25 @@ namespace mst
 
         constexpr bool is_empty() const { return m_ptr == nullptr; }
     };
+
+    // template <is_ref t>
+    // class variant_view<t>
+    // {
+    // private:
+    //     mst::remove_reference_t<t> *m_ptr;
+
+    // public:
+    //     constexpr variant_view(t p) : m_ptr(&p) {}
+
+    //     constexpr auto begin() { return variant_value_iterator<t>(m_ptr); }
+    //     constexpr auto end() { return variant_value_iterator<t>(nullptr); }
+
+    //     constexpr auto begin() const { return variant_value_iterator<const t>(m_ptr); }
+    //     constexpr auto end() const { return variant_value_iterator<const t>(nullptr); }
+
+    //     constexpr bool is_empty() const { return m_ptr == nullptr; }
+    // };
+
 }
 
 #endif // MST_VARIANT_ITERATOR_H

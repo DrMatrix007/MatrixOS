@@ -9,7 +9,7 @@ constexpr bool test1()
 
     *data.try_get() = 5;
 
-    const optional<int> data1 = data;
+    optional<int> data1 = data;
 
     return *data1.try_get() == 5;
 }

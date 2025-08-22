@@ -1,20 +1,20 @@
 #ifndef STANDARD_MATRIX_MATCH_H
 #define STANDARD_MATRIX_MATCH_H
 
-#define _MATCH_ARG_COUNT(_1,_2,_3,COUNT,...) COUNT
-#define _MATCH_COUNT(...) _MATCH_ARG_COUNT(__VA_ARGS__, 3, 2, 1)
+#define _MATCH_NARGS_IMPL(_1, _2, _3, N, ...) N
+#define _MATCH_NARGS(...) _MATCH_NARGS_IMPL(__VA_ARGS__, 3, 2, 1)
 
-#define _MATCH_CONCAT(a,b) a##b
-#define _MATCH_EXPAND_CONCAT(a,b) _MATCH_CONCAT(a,b)
+#define _MATCH_CAT(a, b) a##b
+#define _MATCH_DISPATCH(N, ...) _MATCH_CAT(_MATCH_IMPL_, N)(__VA_ARGS__)
 
-#define match(...) _MATCH_EXPAND_CONCAT(_MATCH_DISPATCH_, _MATCH_COUNT(__VA_ARGS__))(__VA_ARGS__)
+#define match(...) _MATCH_DISPATCH(_MATCH_NARGS(__VA_ARGS__), __VA_ARGS__)
 
-#define _MATCH_DISPATCH_3(TYPE, VAR_NAME, DATA) \
-    if (!(DATA.view<TYPE>()).is_empty()) \
-        for (auto&& VAR_NAME : (DATA).view<TYPE>())
+#define _MATCH_IMPL_3(TYPE, VAR, DATA)                               \
+    if (auto&& _match_data = (DATA); !(_match_data.view<TYPE>()).is_empty()) \
+        for (auto&& VAR : _match_data.view<TYPE>())
 
-#define _MATCH_DISPATCH_2(VAR_NAME, DATA) \
-    if (!(DATA.view()).is_empty()) \
-        for (auto&& VAR_NAME : (DATA).view())
+#define _MATCH_IMPL_2(VAR, DATA)                                     \
+    if (auto&& _match_data = (DATA); !(_match_data.view()).is_empty()) \
+        for (auto&& VAR : _match_data.view())
 
 #endif // STANDARD_MATRIX_MATCH_H

@@ -1,15 +1,21 @@
-#include "system_table.hpp"
+#include "optional.hpp"
 #include "protocols/simple_output_protocol.hpp"
-#include <optional.hpp>
-using namespace matrix_efi;
+#include "system_table.hpp"
+#include "mio.hpp"
 
-system_table::system_table(raw_system_table *ptr) : m_raw(ptr)
+matrix_efi::system_table::system_table(raw_system_table *ptr) : m_raw(ptr)
 {
     m_out = simple_output_protocol(ptr->ConOut);
-    
+    match(val, m_out)
+    {
+        val.output_string((wchar_t*)L"whatttt");
+    } else
+    {
+        print((wchar_t*) L"this is bad");
+    }
 }
 
-mst::optional<matrix_efi::simple_output_protocol> &system_table::out()
+mst::optional<matrix_efi::simple_output_protocol&> matrix_efi::system_table::out()
 {
-    return m_out;
+    return mst::optional<matrix_efi::simple_output_protocol&>{};
 }

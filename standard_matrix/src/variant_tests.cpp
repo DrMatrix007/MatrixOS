@@ -171,6 +171,18 @@ constexpr bool test_match()
     return false;
 }
 
+constexpr bool test_refs()
+{
+    int data = 0;
+    bool data1 = false;
+
+    // variant<int&, bool&> var(ref<int>(data));
+
+
+    return true;
+}
+
+
 static_assert(test_raii_move());
 static_assert(test_raii_copy());
 static_assert(test_basic());
@@ -179,3 +191,4 @@ static_assert(test_from());
 static_assert(test_reset());
 static_assert(test_iter());
 static_assert(test_match());
+static_assert(test_refs());

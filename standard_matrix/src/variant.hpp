@@ -8,6 +8,7 @@
 #include "mem_utils.hpp"
 #include "variant_iterator.hpp"
 #include "match.hpp"
+#include "ref.hpp"
 
 #include "stddef.h"
 
@@ -38,7 +39,7 @@ namespace mst
         constexpr variant_storage();
 
         template <in_group<first, rest...> type>
-        constexpr variant_storage(type &&val);
+        constexpr variant_storage(type&& val);
 
         constexpr variant_storage(variant_storage &&other, int64 index);
         constexpr variant_storage(const variant_storage &other, int64 index);
@@ -51,18 +52,19 @@ namespace mst
         constexpr void destruct(int64 target_index) noexcept;
 
         template <typename type>
-        constexpr type *try_get(int64 index);
+        constexpr ref<type> try_get(int64 index);
 
         template <typename type>
-        constexpr const type *try_get(int64 index) const;
+        constexpr const_ref<type> try_get(int64 index) const;
 
     private:
-        first m_head;
+        ref_wrap_t<first> m_head;
         // When sizeof...(rest) == 0, this becomes a dummy `char` that we never read
         variant_storage<rest...> m_tail;
     };
 
-    template <typename... types> requires(is_unique_tuple_v<types...>)
+    template <typename... types>
+        requires(is_unique_tuple_v<types...>)
     class variant
     {
     public:
@@ -70,20 +72,18 @@ namespace mst
         constexpr variant(variant<types...> &&other);
 
         template <in_group<types...> type>
-        constexpr variant(type &&t);
+        constexpr variant(ref_wrap_t<type> t);
 
-        template <in_group<types...> type>
-        static constexpr variant<types...> from(type &&arg);
 
         constexpr variant &operator=(variant &&other);
 
         constexpr ~variant() noexcept;
 
         template <typename type>
-        constexpr const type *try_get() const;
+        constexpr ref<type> try_get();
 
         template <typename type>
-        constexpr type *try_get();
+        constexpr const_ref<type> try_get() const;
 
         template <in_group<types...> type>
         constexpr variant_view<type> view();
@@ -170,13 +170,13 @@ namespace mst
 
     template <typename first, typename... rest>
     template <typename type>
-    inline constexpr type *variant_storage<first, rest...>::try_get(int64 index)
+    inline constexpr ref<type> variant_storage<first, rest...>::try_get(int64 index)
     {
         if constexpr (same_as<first, type>)
         {
             if (index == 0)
             {
-                return &m_head;
+                return ref<type>(m_head);
             }
         }
         else if constexpr (sizeof...(rest) > 0)
@@ -188,13 +188,13 @@ namespace mst
 
     template <typename first, typename... rest>
     template <typename type>
-    inline constexpr const type *variant_storage<first, rest...>::try_get(int64 index) const
+    inline constexpr const_ref<type> variant_storage<first, rest...>::try_get(int64 index) const
     {
         if constexpr (same_as<first, type>)
         {
             if (index == 0)
             {
-                return &m_head;
+                return m_head;
             }
         }
         else if constexpr (sizeof...(rest) > 0)
@@ -223,20 +223,12 @@ namespace mst
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     template <in_group<types...> type>
-    inline constexpr variant<types...>::variant(type &&t)
+    inline constexpr variant<types...>::variant(ref_wrap_t<type> t)
     {
         new (&m_storage) variant_storage<types...>(mst::move(t));
         m_index = find_type_index_v<type, types...>;
     }
 
-    template <typename... types>
-        requires(is_unique_tuple_v<types...>)
-    template <in_group<types...> type>
-    inline constexpr variant<types...> variant<types...>::from(type &&arg)
-    {
-        variant<types...> v(mst::move(arg));
-        return mst::move(v);
-    }
 
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
@@ -275,7 +267,7 @@ namespace mst
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     template <typename type>
-    inline constexpr const type *variant<types...>::try_get() const
+    inline constexpr const_ref<type> variant<types...>::try_get() const
     {
         if (find_type_index_v<type, types...> == m_index)
         {
@@ -287,7 +279,7 @@ namespace mst
     template <typename... types>
         requires(is_unique_tuple_v<types...>)
     template <typename type>
-    inline constexpr type *variant<types...>::try_get()
+    inline constexpr ref<type> variant<types...>::try_get()
     {
         if (find_type_index_v<type, types...> == m_index)
         {
@@ -318,6 +310,6 @@ namespace mst
         ptr->~type();
     }
 
-} // namespace mst
+}; // namespace mst
 
 #endif // STANDARD_MATRIX_VARIANT_H

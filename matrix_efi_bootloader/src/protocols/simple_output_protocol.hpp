@@ -1,7 +1,8 @@
-#if !defined(MATRIX_EFI_SIMPLE_OUTPUT_PROTOCOL_H)
+#ifndef MATRIX_EFI_SIMPLE_OUTPUT_PROTOCOL_H
 #define MATRIX_EFI_SIMPLE_OUTPUT_PROTOCOL_H
 
 #include <efi.h>
+
 namespace matrix_efi
 {
     using raw_simple_output_protocol = EFI_SIMPLE_TEXT_OUT_PROTOCOL;

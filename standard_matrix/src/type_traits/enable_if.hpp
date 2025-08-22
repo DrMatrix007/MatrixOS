@@ -3,15 +3,15 @@
 
 namespace mst
 {
-    template <bool Condition, typename T = void>
+    template <bool Condition, typename type = void>
     struct enable_if
     {
     };
 
-    template <typename T>
-    struct enable_if<true, T>
+    template <typename t>
+    struct enable_if<true, t>
     {
-        using type = T;
+        using type = t;
     };
 }
 

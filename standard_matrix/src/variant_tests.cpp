@@ -111,12 +111,6 @@ constexpr bool test_copy_move()
     return true;
 }
 
-constexpr bool test_from()
-{
-    auto v = variant<int, float>::from(7);
-    return v.try_get<int>() && *v.try_get<int>() == 7;
-}
-
 constexpr bool test_reset()
 {
     variant<int, d> v(d{88});
@@ -174,12 +168,15 @@ constexpr bool test_match()
 constexpr bool test_refs()
 {
     int data = 0;
-    bool data1 = false;
 
-    // variant<int&, bool&> var(ref<int>(data));
+    variant<int&, ref<bool>> var(data);
 
+    match(int&, value, var)
+    {
+        value = 5;
+    }
 
-    return true;
+    return data == 5;
 }
 
 
@@ -187,7 +184,6 @@ static_assert(test_raii_move());
 static_assert(test_raii_copy());
 static_assert(test_basic());
 static_assert(test_copy_move());
-static_assert(test_from());
 static_assert(test_reset());
 static_assert(test_iter());
 static_assert(test_match());

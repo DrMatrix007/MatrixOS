@@ -17,7 +17,7 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *
     
     match(output, table.out())
     {
-        output.output_string((wchar_t*)L"lol bozo\n");
+        output->output_string((wchar_t*)L"lol bozo\n");
     }
 
     return status;

@@ -15,7 +15,7 @@ matrix_efi::system_table::system_table(raw_system_table *ptr) : m_raw(ptr)
     }
 }
 
-mst::optional<matrix_efi::simple_output_protocol&> matrix_efi::system_table::out()
+mst::optional<mst::ref<matrix_efi::simple_output_protocol>> matrix_efi::system_table::out()
 {
-    return mst::optional<matrix_efi::simple_output_protocol&>{};
+    return mst::optional<mst::ref<matrix_efi::simple_output_protocol>>{};
 }

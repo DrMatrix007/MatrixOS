@@ -1,5 +1,4 @@
 #include "efi.h"
-#include "efilib.h"
 #include "efiprot.h"
 
 #include "graphics_protocol.hpp"
@@ -68,4 +67,16 @@ void graphics_protocol::draw_pixel(uint32 x, uint32 y, uint8 r, uint8 g,
     pixel.Reserved = 0;
 
     m_raw->Blt(m_raw, &pixel, EfiBltBufferToVideo, 0, 0, x, y, 1, 1, 0);
+}
+
+graphics_protocol::raw* graphics_protocol::get_raw()
+{
+    return m_raw;
+}
+
+mbi::frame_buffer graphics_protocol::frame_buffer()
+{
+    return mbi::frame_buffer{(void*)m_raw->Mode->FrameBufferBase,
+                             (uint64)m_raw->Mode->Info->HorizontalResolution,
+                             (uint64)m_raw->Mode->Info->VerticalResolution};
 }

@@ -6,6 +6,7 @@
 #include "optional.hpp"
 #include "protocol.hpp"
 #include "protocols/simple_output_protocol.hpp"
+#include "graphics/frame_buffer.hpp"
 
 namespace matrix_efi
 {
@@ -22,6 +23,9 @@ public:
     void get_mode(uint32& width, uint32& height) const;
     void draw_pixel(uint32 x, uint32 y, uint8 r, uint8 g, uint8 b);
 
+    raw* get_raw();
+
+    mbi::frame_buffer frame_buffer();
 private:
     raw* m_raw;
 };

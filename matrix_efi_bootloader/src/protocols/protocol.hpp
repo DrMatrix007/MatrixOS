@@ -12,10 +12,10 @@ using efi_guid = EFI_GUID;
 template <typename t>
 concept efi_protocol = requires() {
     { t::guid() } -> mst::same_as<efi_guid>;
-} && requires() {
-    typename t::raw;
-} && requires(t::raw* p) {
+} && requires() { typename t::raw; } && requires(t::raw* p) {
     { t(p) } -> mst::same_as<t>;
+} && requires(t prot) {
+    { prot.get_raw() } -> mst::same_as<typename t::raw*>;
 };
 
 } // namespace matrix_efi

@@ -1,16 +1,16 @@
 cmake_minimum_required(VERSION 3.10.0)
 project(matrix_efi_bootloader VERSION 0.1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_COMPILER /bin/clang++)
-set(CMAKE_C_COMPILER /bin/clang)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
+
 
 file(GLOB_RECURSE SRC src/*.cpp src/*.hpp gnu-efi-src/data.c)
 
 add_executable(matrix_efi_bootloader ${SRC})
 
-# target_link_directories(standard_matrix PUBLIC)
 target_link_libraries(matrix_efi_bootloader PUBLIC standard_matrix)
-# target_include_directories(matrix_efi_bootloader PUBLIC ../standard_matrix/src/)
+target_link_libraries(matrix_efi_bootloader PUBLIC matrix_boot_info)
 
 
 target_compile_features(matrix_efi_bootloader PUBLIC c_std_23)
@@ -28,15 +28,13 @@ target_compile_options(matrix_efi_bootloader PRIVATE
     -fshort-wchar
     -ffreestanding
     -mno-red-zone
-    -msoft-float
-    -fno-exceptions
+    -fno-exceptions 
+    -fno-rtti
+    # -msoft-float
+    # -fno-exceptions
     # -ffreestanding
-    # -fno-stack-protector
-    # -fno-stack-check
     # -fshort-wchar
     # -mno-red-zone
-    # -maccumulate-outgoing-args
-    # -fpic
 )
 
 target_link_options(matrix_efi_bootloader PRIVATE
@@ -45,17 +43,37 @@ target_link_options(matrix_efi_bootloader PRIVATE
     -nostdlib
     -target x86_64-unknown-windows
     -Wl,-subsystem:efi_application
-    -fuse-ld=lld-link
-
+    -fuse-ld=lld
+    # -nostdlib
+    # -Wl,-dll
     # -shared
-    # -Bsymbolic
-    # -Lefi
-    # -Lgnuefi
-    # -T${CMAKE_CURRENT_SOURCE_DIR}/linker.ld /usr/lib/crt0-efi-x86_64.o
+    # -Wl,--subsystem,10
+    # -e efi_main
+    # -T${CMAKE_CURRENT_SOURCE_DIR}/linker.ld
 )
-
 include(CTest)
 enable_testing()
+
+
+add_custom_target(matrix_efi_bootloader_efi ALL
+    # Convert binary to EFI
+    COMMAND objcopy
+    --target=pei-x86-64
+    ${CMAKE_CURRENT_BINARY_DIR}/matrix_efi_bootloader
+    ${CMAKE_CURRENT_BINARY_DIR}/matrix_efi_bootloader.efi
+    COMMENT "Converting binary to EFI"
+    DEPENDS matrix_efi_bootloader # ensures the original binary is built first
+)
+add_custom_target(matrix_efi_bootloader_efi_subsystem ALL
+    COMMAND ${CMAKE_COMMAND} -E echo "Patching EFI subsystem using Python..."
+    # COMMAND python3 ${CMAKE_CURRENT_SOURCE_DIR}/subsystem_patch.py ${CMAKE_CURRENT_BINARY_DIR}/matrix_efi_bootloader.efi
+    COMMENT "Patching EFI subsystem"
+    DEPENDS matrix_efi_bootloader_efi
+)
+
+
+
+
 
 
 

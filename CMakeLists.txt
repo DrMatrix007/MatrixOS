@@ -37,6 +37,8 @@ set(EXE_NAME matrix_efi_bootloader/matrix_efi_bootloader)
 add_custom_command(
     OUTPUT OVMF.fd
     COMMAND cp ${CMAKE_CURRENT_SOURCE_DIR}/OVMF.4m.fd ${CMAKE_CURRENT_BINARY_DIR}/OVMF.fd
+    COMMENT "Coping UEFI FAT image"
+
 )
 add_custom_target(copy_ovmf ALL
     DEPENDS OVMF.fd
@@ -63,7 +65,7 @@ add_custom_command(
 )
 
 add_custom_target(build_image ALL
-    DEPENDS ${IMAGE_NAME} matrix_efi_bootloader
+    DEPENDS ${IMAGE_NAME}
 )
 
 set(MATRIX_IMAGE_PATH ${CMAKE_CURRENT_BINARY_DIR}/${IMAGE_NAME})

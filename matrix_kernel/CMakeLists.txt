@@ -16,7 +16,9 @@ target_compile_features(matrix_kernel PUBLIC c_std_23)
 target_compile_features(matrix_kernel PUBLIC cxx_std_26)
 
 target_compile_options(matrix_kernel PUBLIC
--ffreestanding
+    -Wall
+    -Werror
+    -ffreestanding
 )
 
 target_link_options(matrix_kernel PUBLIC

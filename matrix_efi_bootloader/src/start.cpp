@@ -60,5 +60,8 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
         }
     }
 
-    return EFI_SUCCESS;
+    while(true)
+    {
+        asm("hlt");
+    }
 }

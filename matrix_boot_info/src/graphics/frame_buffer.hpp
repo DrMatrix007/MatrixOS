@@ -23,18 +23,10 @@ struct __attribute__((packed)) pixel
 class frame_buffer
 {
 public:
-    frame_buffer(void* buffer, uint64 width, uint64 height)
-        : m_buffer((pixel*)buffer), m_width(width), m_height(height)
-    {
-    }
+    frame_buffer(void* buffer, uint64 width, uint64 height);
 
-    inline void set_pixel(uint64 x, uint64 y, const pixel& p)
-    {
-        if (x < m_width && y < m_height)
-        {
-            m_buffer[y * m_width + x] = p;
-        }
-    }
+    void set_pixel(uint64 x, uint64 y, const pixel& p);
+    
 
     inline uint64 width()
     {

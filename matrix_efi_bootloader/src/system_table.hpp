@@ -10,17 +10,22 @@
 #include "protocols/simple_output_protocol.hpp"
 namespace matrix_efi
 {
-using raw_system_table = struct _EFI_SYSTEM_TABLE;
+using raw_system_table = EFI_SYSTEM_TABLE;
+using raw_efi_handle = EFI_HANDLE;
+using efi_status = EFI_STATUS;
+
 class system_table
 {
 public:
-    system_table(raw_system_table* ptr);
+    system_table(raw_system_table* ptr, raw_efi_handle image_handle);
     template <efi_protocol protocol> mst::optional<protocol> get_protocol();
     template <efi_protocol protocol> void close_protocol(protocol prot);
     mst::optional<simple_output_protocol&> out();
-    void exit_boot_services();
+    efi_status exit_boot_services();
+
 private:
     raw_system_table* m_raw;
+    raw_efi_handle m_image_handle;
     mst::optional<simple_output_protocol> m_out;
 };
 

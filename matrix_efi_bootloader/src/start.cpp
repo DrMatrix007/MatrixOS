@@ -16,7 +16,7 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 
     ST = SystemTable;
 
-    system_table table(SystemTable);
+    system_table table(SystemTable, ImageHandle);
 
     mst::optional<simple_output_protocol&> out_opt = table.out();
 
@@ -29,9 +29,9 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 
     match_or(gop, gop_opt, return EFI_ABORTED);
 
-    auto res = gop.try_find_mode(1920, 1080);
+    auto index = gop.try_find_mode(1920, 1080);
 
-    match(index, res)
+    match(index, index)
     {
         gop.set_mode(index);
     }
@@ -42,21 +42,22 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
         simple_out.output_string((wchar_t*)L"hello world\n");
     }
     auto frame = gop.frame_buffer();
-    
-    table.exit_boot_services();
-    
-    
+
+    auto res = table.exit_boot_services();
+
+    if (res != EFI_SUCCESS)
+    {
+        simple_out.print(L"Cant exit BootServices, Error: %d", res);
+        return res;
+    }
+
     for (int x = 0; x < frame.width(); x++)
     {
-        
+
         for (int y = 0; y < frame.width(); y++)
         {
             frame.set_pixel(x, y, mbi::pixel{10, 10, 25, 10});
         }
-    }
-
-    while (true)
-    {
     }
 
     return EFI_SUCCESS;

@@ -5,10 +5,10 @@ set(CMAKE_CXX_COMPILER /bin/clang++)
 set(CMAKE_C_COMPILER /bin/clang)
 
 file(GLOB_RECURSE SRC src/*.cpp gnu-efi-src/data.c)
-file(GLOB_RECURSE HEADRES src/*.hpp gnu-efi-src/data.c)
+file(GLOB_RECURSE HEADERS src/*.hpp gnu-efi-src/data.c)
 
-add_library(standard_matrix ${SRC} ${HEADRES})
-include_directories(standard_matrix ${HEADRES})
+add_library(standard_matrix ${SRC} ${HEADERS})
+include_directories(standard_matrix ${HEADERS})
 target_include_directories(standard_matrix PUBLIC src/)
 
 

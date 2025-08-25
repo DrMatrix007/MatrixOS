@@ -7,7 +7,7 @@ add_executable(matrix_kernel_runner main.cpp)
 set(BOOTINFO_PATH matrix_boot_info)
 
 set(EFI_BOOTLOADER_PROJECT_PATH matrix_efi_bootloader)
-set(BOOTLOADER_BIN ${EFI_BOOTLOADER_PROJECT_PATH}/matrix_efi_bootloader.efi)
+set(BOOTLOADER_BIN ${EFI_BOOTLOADER_PROJECT_PATH}/matrix_efi_bootloader)
 
 set(KERNEL_PROJECT_PATH matrix_kernel)
 set(KERNEL_BIN ${KERNEL_PROJECT_PATH}/matrix_kernel)
@@ -58,7 +58,8 @@ add_custom_command(
     COMMAND mcopy -i ${IMAGE_NAME} ${CMAKE_CURRENT_SOURCE_DIR}/${EFI_BOOTLOADER_PROJECT_PATH}/startup.nsh ::
 
     COMMENT "Creating UEFI FAT image"
-    DEPENDS matrix_efi_bootloader_efi_subsystem
+    DEPENDS matrix_efi_bootloader
+    DEPENDS matrix_kernel
 )
 
 add_custom_target(build_image ALL

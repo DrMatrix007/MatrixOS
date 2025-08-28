@@ -5,6 +5,7 @@
 #include "int_types.hpp"
 #include "match.hpp"
 #include "optional.hpp"
+#include "protocols/protocol.hpp"
 
 using namespace matrix_efi;
 
@@ -13,7 +14,7 @@ efi_guid graphics_protocol::guid()
     return EFI_GRAPHICS_OUTPUT_PROTOCOL_GUID;
 }
 
-graphics_protocol::graphics_protocol(graphics_protocol::raw* raw) : m_raw(raw)
+graphics_protocol::graphics_protocol(protocol_handle<raw> raw) : m_raw(mst::move(raw))
 {
 }
 
@@ -25,7 +26,7 @@ mst::optional<int> graphics_protocol::try_find_mode(
     EFI_GRAPHICS_OUTPUT_MODE_INFORMATION* info = nullptr;
     for (uint32_t i = 0; i < m_raw->Mode->MaxMode; ++i)
     {
-        m_raw->QueryMode(m_raw, i, &sizeofinfo, &info);
+        m_raw->QueryMode(m_raw.get(), i, &sizeofinfo, &info);
 
         // Print(L"size: %d %d\n", info->HorizontalResolution,
         // info->VerticalResolution);
@@ -54,7 +55,7 @@ void graphics_protocol::get_mode(uint32_t& width, uint32_t& height) const
 
 void graphics_protocol::set_mode(uint32 index)
 {
-    m_raw->SetMode(m_raw, index);
+    m_raw->SetMode(m_raw.get(), index);
 }
 
 void graphics_protocol::draw_pixel(uint32 x, uint32 y, uint8 r, uint8 g,
@@ -66,12 +67,12 @@ void graphics_protocol::draw_pixel(uint32 x, uint32 y, uint8 r, uint8 g,
     pixel.Blue = b;
     pixel.Reserved = 0;
 
-    m_raw->Blt(m_raw, &pixel, EfiBltBufferToVideo, 0, 0, x, y, 1, 1, 0);
+    m_raw->Blt(m_raw.get(), &pixel, EfiBltBufferToVideo, 0, 0, x, y, 1, 1, 0);
 }
 
 graphics_protocol::raw* graphics_protocol::get_raw()
 {
-    return m_raw;
+    return m_raw.get();
 }
 
 mbi::frame_buffer graphics_protocol::frame_buffer()

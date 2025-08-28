@@ -2,19 +2,19 @@
 #define MATRIX_EFI_SIMPLE_OUTPUT_PROTOCOL_H
 
 #include "efi.h"
-#include "efilib.h"
-#include <efipciio.h>
+#include "../unique_handle.hpp"
 
 #define STR_LEN 500
 
 namespace matrix_efi
 {
-using raw_simple_output_protocol = EFI_SIMPLE_TEXT_OUT_PROTOCOL;
 
 class simple_output_protocol
 {
 public:
-    simple_output_protocol(raw_simple_output_protocol* ptr);
+    using raw = EFI_SIMPLE_TEXT_OUT_PROTOCOL;
+    
+    simple_output_protocol(raw* ptr);
 
     EFI_STATUS reset(bool extended);
     EFI_STATUS output_string(CHAR16* str);
@@ -32,8 +32,9 @@ public:
 
     void print(const CHAR16* fmt, ...);
 
+
 private:
-    raw_simple_output_protocol* m_raw;
+    unique_handle<raw> m_raw;
 };
 
 } // namespace matrix_efi

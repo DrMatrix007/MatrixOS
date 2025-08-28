@@ -1,4 +1,5 @@
 #include "constructible_from.hpp"
+#include "int_types.hpp"
 
 using namespace mst;
 

@@ -27,16 +27,16 @@ target_compile_options(matrix_efi_bootloader PRIVATE
     # -fno-rtti only for cpp.
     -Werror 
     -m64 
-    -mabi=ms 
+    # -mabi=ms 
     -ffreestanding
 )
 
-set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-sized-deallocation")
 
 target_link_options(matrix_efi_bootloader PRIVATE
     -Werror
     -m64
-    -mabi=ms
+    # -mabi=ms
     -nostdlib
     -shared
     -Wl,-dll

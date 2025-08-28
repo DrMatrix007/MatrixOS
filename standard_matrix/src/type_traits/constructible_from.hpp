@@ -1,6 +1,7 @@
 #ifndef STANDARD_MATRIX_TYPE_TRAITS_CONSTRUCTIBLE_FROM_H
 #define STANDARD_MATRIX_TYPE_TRAITS_CONSTRUCTIBLE_FROM_H
 
+#include "int_types.hpp"
 #include "is_same.hpp"
 #include "../move.hpp"
 

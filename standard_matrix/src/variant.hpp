@@ -14,8 +14,11 @@
 // for non std environents
 inline constexpr void *operator new(size_t, void *ptr) noexcept { return ptr; }
 inline constexpr void *operator new[](size_t, void *ptr) noexcept { return ptr; }
+// inline constexpr void operator delete(void *, unsigned long long) noexcept {}
+// inline constexpr void operator delete[](void *, unsigned long long) noexcept {}
 inline constexpr void operator delete(void *, void *) noexcept {}
 inline constexpr void operator delete[](void *, void *) noexcept {}
+
 // #endif
 
 namespace mst
@@ -45,7 +48,7 @@ namespace mst
         {
             if constexpr (same_as<first, remove_reference_t<type>>)
             {
-                new (&m_head) remove_reference_t<type>(mst::move(val));
+                new (&m_head) remove_reference_t<type>(static_cast<remove_reference_t<type>&&>(val));
             }
             else if constexpr (sizeof...(rest) > 0)
             {
@@ -272,7 +275,7 @@ namespace mst
             m_storage.template destruct<0>(m_index);
         }
 
-        constexpr variant(uint64 index, variant_storage<types...> storage)
+        constexpr variant(variant_storage<types...> storage, uint64 index)
             : m_index(static_cast<int64>(index)), m_storage(mst::move(storage))
         {
         }

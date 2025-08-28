@@ -1,7 +1,6 @@
 #ifndef STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFERENCE_H
 #define STANDARD_MATRIX_TYPE_TRAITS_REMOVE_REFERENCE_H
 
-#include "int_types.hpp"
 #include "is_same.hpp"
 
 namespace mst

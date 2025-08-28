@@ -21,4 +21,13 @@ static_assert(sizeof(uint16) == 2, "uint16 must be 16 bits");
 static_assert(sizeof(uint32) == 4, "uint32 must be 32 bits");
 static_assert(sizeof(uint64) == 8, "uint64 must be 64 bits");
 
+
+#if __has_include("efi.h")
+#include "efi.h"
+using uintn = UINTN;
+using intn = INTN;
+#else
+
+#endif
+
 #endif // STANDARD_MATRIX_INT_TYPES_H

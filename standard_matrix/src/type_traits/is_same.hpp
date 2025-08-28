@@ -1,7 +1,6 @@
 #ifndef STANDARD_MATRIX_TYPE_TRAITS_SAME_H
 #define STANDARD_MATRIX_TYPE_TRAITS_SAME_H
 
-#include "int_types.hpp"
 
 namespace mst
 {

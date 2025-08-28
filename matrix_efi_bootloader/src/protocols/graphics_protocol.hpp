@@ -16,7 +16,7 @@ public:
     using raw = EFI_GRAPHICS_OUTPUT_PROTOCOL;
     static efi_guid guid();
 
-    graphics_protocol(raw* raw);
+    graphics_protocol(protocol_handle<raw> raw);
 
     mst::optional<int> try_find_mode(uint32 width, uint32 height, mst::optional<simple_output_protocol&> verbose = mst::nullopt);
     void set_mode(uint32 index);
@@ -27,7 +27,7 @@ public:
 
     mbi::frame_buffer frame_buffer();
 private:
-    raw* m_raw;
+    protocol_handle<raw> m_raw;
 };
 
 } // namespace matrix_efi

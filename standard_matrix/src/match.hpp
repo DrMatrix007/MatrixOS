@@ -1,8 +1,8 @@
 #ifndef STANDARD_MATRIX_MATCH_H
 #define STANDARD_MATRIX_MATCH_H
 
-#define _MATCH_NARGS_IMPL(_1, _2, _3, N, ...) N
-#define _MATCH_NARGS(...) _MATCH_NARGS_IMPL(__VA_ARGS__, 3, 2, 1)
+#define _MATCH_NARGS_IMPL(_1, _2, _3, _4, N, ...) N
+#define _MATCH_NARGS(...) _MATCH_NARGS_IMPL(__VA_ARGS__, 4, 3, 2, 1)
 
 #define _MATCH_CAT(a, b) a##b
 #define _MATCH_DISPATCH(N, ...) _MATCH_CAT(_MATCH_IMPL_, N)(__VA_ARGS__)

@@ -1,10 +1,13 @@
 #include <efi.h>
 #include <efilib.h>
 
+#include "efi_error.hpp"
 #include "efierr.h"
-#include "graphics/frame_buffer.hpp"
+#include "efiprot.h"
 #include "match.hpp"
 #include "protocols/graphics_protocol.hpp"
+#include "protocols/simple_file_system_file.hpp"
+#include "protocols/simple_file_system_protocol.hpp"
 #include "protocols/simple_output_protocol.hpp"
 #include "system_table.hpp"
 
@@ -36,19 +39,35 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
         gop.set_mode(index);
     }
 
-    match(simple_out, out_opt)
+    auto fs_opt = table.get_protocol<simple_filesystem_protocol>();
+    match(efi_error, err, fs_opt)
     {
-        simple_out.clear_screen();
-        simple_out.output_string((wchar_t*)L"hello world\n");
+        simple_out.print(L"%d\n", err);
+        while (true)
+        {
+        }
     }
+    match_or(fs, fs_opt, return EFI_ABORTED);
+    simple_out.print(L"got fs! ");
+
+    match_or(vol, fs.open_volume(), return EFI_ABORTED);
+    simple_out.print(L"got vol! ");
+
+
+    // match_or(
+    //     kernel_file,
+    //     vol.open((wchar_t*)L"fs0:/EFI/BOOT/BOOTX64.EFI", EFI_FILE_MODE_READ, 0),
+    //     return EFI_ABORTED);
+    simple_out.print(L"got kernel!\n");
+
     auto frame = gop.frame_buffer();
 
     auto res = table.exit_boot_services();
 
-    if (res != EFI_SUCCESS)
+    match(res, res)
     {
         simple_out.print(L"Cant exit BootServices, Error: %d", res);
-        return res;
+        return res.raw();
     }
 
     for (int x = 0; x < frame.width(); x++)
@@ -59,9 +78,5 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
             frame.set_pixel(x, y, mbi::pixel{10, 10, 25, 10});
         }
     }
-
-    while(true)
-    {
-        asm("hlt");
-    }
+    return efi_success;
 }

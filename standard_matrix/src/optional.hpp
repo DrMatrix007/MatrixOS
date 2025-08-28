@@ -39,6 +39,11 @@ public:
     optional& operator=(const optional&) = default;
     optional& operator=(optional&&) = default;
 
+    static optional from_const_ref(const type& ref)
+    {
+        return optional(const_ref(ref));
+    }
+
     constexpr bool has_value() const
     {
         return m_variant.template try_get<type>() != nullptr;

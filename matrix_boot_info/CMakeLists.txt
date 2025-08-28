@@ -12,16 +12,18 @@ target_compile_options(matrix_boot_info_kernel PUBLIC -ffreestanding)
 target_compile_features(matrix_boot_info_kernel PUBLIC c_std_23 cxx_std_26)
 target_link_libraries(matrix_boot_info_kernel PRIVATE standard_matrix)
 
-set(CMAKE_C_COMPILER "x86_64-w64-mingw32-gcc")
-set(CMAKE_CXX_COMPILER "x86_64-w64-mingw32-g++")
+set_target_properties(matrix_boot_info_kernel PROPERTIES
+    RULE_LAUNCH_COMPILE "clang++"
+)
 
 add_library(matrix_boot_info_uefi STATIC ${SOURCES} ${HEADERS})
 target_include_directories(matrix_boot_info_uefi PUBLIC "${CMAKE_CURRENT_SOURCE_DIR}/src/")
-target_compile_options(matrix_boot_info_uefi PRIVATE -fno-exceptions -fno-rtti -ffreestanding -m64 -mabi=ms)
+target_compile_options(matrix_boot_info_uefi PRIVATE -fno-exceptions -fno-rtti -ffreestanding -m64)
 target_compile_features(matrix_boot_info_uefi PUBLIC c_std_23 cxx_std_26)
 target_link_libraries(matrix_boot_info_uefi PRIVATE standard_matrix)
 
+
 set_target_properties(matrix_boot_info_uefi PROPERTIES
-    CXX_COMPILER "x86_64-w64-mingw32-g++"
-    C_COMPILER "x86_64-w64-mingw32-gcc"
+    RULE_LAUNCH_COMPILE "x86_64-w64-mingw32-g++"
 )
+

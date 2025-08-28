@@ -1,6 +1,8 @@
 #include "simple_output_protocol.hpp"
-matrix_efi::simple_output_protocol::simple_output_protocol(
-    raw_simple_output_protocol* ptr)
+
+#include "stdarg.h"
+
+matrix_efi::simple_output_protocol::simple_output_protocol(raw* ptr)
     : m_raw(ptr)
 {
 }
@@ -69,50 +71,50 @@ void matrix_efi::simple_output_protocol::print(const CHAR16* fmt, ...)
 
 EFI_STATUS matrix_efi::simple_output_protocol::reset(bool extended)
 {
-    return m_raw->Reset(m_raw, extended);
+    return m_raw->Reset(m_raw.get(), extended);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::output_string(CHAR16* str)
 {
-    return m_raw->OutputString(m_raw, str);
+    return m_raw->OutputString(m_raw.get(), str);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::test_string(CHAR16* str)
 {
-    return m_raw->TestString(m_raw, str);
+    return m_raw->TestString(m_raw.get(), str);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::query_mode(UINTN mode_number,
                                                           UINTN* columns,
                                                           UINTN* rows)
 {
-    return m_raw->QueryMode(m_raw, mode_number, columns, rows);
+    return m_raw->QueryMode(m_raw.get(), mode_number, columns, rows);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::set_mode(UINTN mode_number)
 {
-    return m_raw->SetMode(m_raw, mode_number);
+    return m_raw->SetMode(m_raw.get(), mode_number);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::set_attribute(UINTN attribute)
 {
-    return m_raw->SetAttribute(m_raw, attribute);
+    return m_raw->SetAttribute(m_raw.get(), attribute);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::clear_screen()
 {
-    return m_raw->ClearScreen(m_raw);
+    return m_raw->ClearScreen(m_raw.get());
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::set_cursor_position(UINTN column,
                                                                    UINTN row)
 {
-    return m_raw->SetCursorPosition(m_raw, column, row);
+    return m_raw->SetCursorPosition(m_raw.get(), column, row);
 }
 
 EFI_STATUS matrix_efi::simple_output_protocol::enable_cursor(bool visible)
 {
-    return m_raw->EnableCursor(m_raw, visible);
+    return m_raw->EnableCursor(m_raw.get(), visible);
 }
 
 SIMPLE_TEXT_OUTPUT_MODE* matrix_efi::simple_output_protocol::mode()

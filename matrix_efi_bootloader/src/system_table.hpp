@@ -18,7 +18,8 @@ class system_table
 public:
     using raw = EFI_SYSTEM_TABLE;
     system_table(raw* ptr, raw_efi_handle image_handle);
-    template <efi_protocol protocol> mst::result<protocol, efi_error> get_protocol();
+    template <efi_protocol protocol> mst::result<protocol, efi_error> open_protocol();
+    template <efi_protocol protocol> mst::result<protocol, efi_error> locate_protocol();
     template <efi_protocol protocol> void close_protocol(protocol prot);
     mst::optional<simple_output_protocol&> out();
     mst::optional<efi_error> exit_boot_services();
@@ -30,14 +31,31 @@ private:
 };
 
 template <efi_protocol protocol>
-inline mst::result<protocol, efi_error> system_table::get_protocol()
+inline mst::result<protocol, efi_error> system_table::open_protocol()
 {
 
     efi_guid guid = protocol::guid();
 
     typename protocol::raw* inter;
 
-    efi_status err = m_raw->BootServices->LocateProtocol(&guid, nullptr, (void**)&inter);
+
+    efi_status err = m_raw->BootServices->OpenProtocol(m_image_handle, &guid, (void**)&inter, m_image_handle, 0, EFI_OPEN_PROTOCOL_GET_PROTOCOL);
+    if (err == efi_success)
+    {
+        return protocol(protocol_handle<typename protocol::raw>(inter, m_raw, protocol::guid()));
+    }
+    return efi_error(err);
+}
+template <efi_protocol protocol>
+inline mst::result<protocol, efi_error> system_table::locate_protocol()
+{
+
+    efi_guid guid = protocol::guid();
+
+    typename protocol::raw* inter;
+
+
+    efi_status err = m_raw->BootServices->LocateProtocol(&guid,nullptr, (void**)&inter);
     if (err == efi_success)
     {
         return protocol(protocol_handle<typename protocol::raw>(inter, m_raw, protocol::guid()));

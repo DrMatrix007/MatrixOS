@@ -5,7 +5,7 @@
 
 namespace mbi
 {
-    class boot_info
+    struct boot_info
     {
         frame_buffer m_buffer;
     };

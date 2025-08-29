@@ -11,6 +11,8 @@ file(GLOB_RECURSE HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")
 
 
 add_executable(matrix_kernel ${SOURCE_FILES})
+target_link_libraries(matrix_kernel PUBLIC standard_matrix)
+target_link_libraries(matrix_kernel PUBLIC matrix_boot_info_kernel)
 
 target_compile_features(matrix_kernel PUBLIC c_std_23)
 target_compile_features(matrix_kernel PUBLIC cxx_std_26)

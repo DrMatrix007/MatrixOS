@@ -1,5 +1,6 @@
 #include "simple_file_system_file.hpp"
 #include "int_types.hpp"
+#include "../system_table.hpp"
 
 namespace matrix_efi
 {
@@ -13,11 +14,13 @@ mst::result<simple_filesystem_file, efi_error> simple_filesystem_file::open(
     wchar_t* filename, uint64 open_mode, uint64 attributes)
 {
     simple_filesystem_file::raw* new_raw = nullptr;
+
     EFI_STATUS status =
-        m_raw->Open(m_raw.get(), &new_raw, filename, open_mode, attributes);
+    m_raw->Open(m_raw.get(), &new_raw, filename, open_mode, attributes);
     if (status != efi_success)
     {
         return efi_error(status);
+        
     }
     return simple_filesystem_file(unique_handle<raw>(new_raw));
 }

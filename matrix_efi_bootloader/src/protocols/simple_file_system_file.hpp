@@ -3,8 +3,6 @@
 
 #include "efi.h"
 #include "efi_error.hpp"
-#include "efibind.h"
-#include "efilib.h"
 #include "int_types.hpp"
 #include "result.hpp"
 #include "unique_handle.hpp"

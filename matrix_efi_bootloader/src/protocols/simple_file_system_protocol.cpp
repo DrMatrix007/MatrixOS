@@ -22,7 +22,7 @@ mst::result<simple_filesystem_file,efi_error> simple_filesystem_protocol::open_v
 {
     simple_filesystem_file::raw* ptr = nullptr;
     efi_status res = m_raw->OpenVolume(m_raw.get(), &ptr);
-    if(res != efi_success)
+    if(ptr == nullptr || res != efi_success)
     {
         return efi_error(res);
     }

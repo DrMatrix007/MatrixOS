@@ -4,7 +4,6 @@
 #include "efi_error.hpp"
 #include "efierr.h"
 #include "efiprot.h"
-#include "int_types.hpp"
 #include "match.hpp"
 #include "protocols/graphics_protocol.hpp"
 #include "protocols/simple_file_system_protocol.hpp"
@@ -57,10 +56,7 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
     kernel_file.set_position(-1);
     match_or(pos, kernel_file.get_position(), return EFI_ABORTED);
     simple_out.print(L"%d", pos);
-    while (true)
-    {
-        asm("hlt");
-    }
+
 
     return efi_success;
 }

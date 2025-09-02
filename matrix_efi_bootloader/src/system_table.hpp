@@ -1,3 +1,4 @@
+#include "boot_services.hpp"
 #include "efi_error.hpp"
 #include "result.hpp"
 #if !defined(MATRIX_EFI_SYSTEM_TABLE_H)
@@ -18,17 +19,26 @@ class system_table
 public:
     using raw = EFI_SYSTEM_TABLE;
     system_table(raw* ptr, raw_efi_handle image_handle);
+
+    system_table(system_table&&) = default;
+    system_table& operator=(system_table&&) = default;
+
     template <efi_protocol protocol> mst::result<protocol, efi_error> open_protocol();
     template <efi_protocol protocol> mst::result<protocol, efi_error> locate_protocol();
     template <efi_protocol protocol> void close_protocol(protocol prot);
     mst::optional<simple_output_protocol&> out();
+    boot_services& boot_services();
     mst::optional<efi_error> exit_boot_services();
 
 private:
     raw* m_raw;
     raw_efi_handle m_image_handle;
     mst::optional<simple_output_protocol> m_out;
+    class boot_services m_boot_services;
 };
+
+extern system_table g_table;
+
 
 template <efi_protocol protocol>
 inline mst::result<protocol, efi_error> system_table::open_protocol()
@@ -70,6 +80,11 @@ inline void system_table::close_protocol(protocol prot)
                                        nullptr, nullptr);
 }
 
+extern system_table g_system_table;
+
 }; // namespace matrix_efi
+
+
+
 
 #endif // MATRIX_EFI_SYSTEM_TABLE_H

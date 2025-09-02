@@ -34,6 +34,7 @@ target_compile_options(matrix_efi_bootloader PRIVATE
 set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fno-rtti -fno-sized-deallocation")
 
 target_link_options(matrix_efi_bootloader PRIVATE
+    -lgcc
     -Werror
     -m64
     # -mabi=ms
@@ -43,6 +44,7 @@ target_link_options(matrix_efi_bootloader PRIVATE
     -Wl,--subsystem,10
     -e efi_main
     -Wl,-o,matrix_efi_bootloader
+
 )
 
 

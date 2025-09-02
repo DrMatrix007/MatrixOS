@@ -6,6 +6,18 @@
 
 namespace matrix_efi
 {
+enum class elf_segment_type : uint32
+{
+    null = 0,
+    load = 1,
+    dynamic = 2,
+    interp = 3,
+    note = 4,
+    shlib = 5,
+    phdr = 6,
+    tls = 7,
+    pt_loos = 0x60000000,
+};
 
 struct elf_header
 {
@@ -39,7 +51,7 @@ struct elf_header
 
 struct elf_program_header
 {
-    uint32 p_type;
+    elf_segment_type p_type;
     uint32 p_flags;
     uint64 p_offset;
     uint64 p_vaddr;
@@ -63,9 +75,12 @@ struct elf_section_header
     uint64 sh_entsize;
 };
 
-static_assert(sizeof(elf_header) == 0x40, "this header should be of size 0x40!");
-static_assert(sizeof(elf_program_header) == 0x38, "this header should be of size 0x38!");
-static_assert(sizeof(elf_section_header) == 0x40, "this header should be of size 0x40!");
+static_assert(sizeof(elf_header) == 0x40,
+              "this header should be of size 0x40!");
+static_assert(sizeof(elf_program_header) == 0x38,
+              "this header should be of size 0x38!");
+static_assert(sizeof(elf_section_header) == 0x40,
+              "this header should be of size 0x40!");
 
 using entry_func = void (*)(mbi::boot_info info);
 

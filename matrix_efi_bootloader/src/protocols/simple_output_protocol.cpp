@@ -52,6 +52,31 @@ void matrix_efi::simple_output_protocol::print(const CHAR16* fmt, ...)
                 for (int j = i - 1; j >= 0; --j)
                     *buf_ptr++ = numbuf[j];
             }
+            else if (*p == 'p')
+            {
+                void* ptr = va_arg(args, void*);
+                uintptr_t val = (uintptr_t)ptr;
+
+                *buf_ptr++ = L'0';
+                *buf_ptr++ = L'x';
+
+                CHAR16 numbuf[2 * sizeof(uintptr_t)];
+                int i = 0;
+
+                do
+                {
+                    int digit = val & 0xF;
+                    if (digit < 10)
+                        numbuf[i++] = L'0' + digit;
+                    else
+                        numbuf[i++] = L'a' + (digit - 10);
+                    val >>= 4;
+                } while (val && i < (int)(sizeof(numbuf) / sizeof(numbuf[0])));
+
+                // reverse
+                for (int j = i - 1; j >= 0; --j)
+                    *buf_ptr++ = numbuf[j];
+            }
             else
             {
                 *buf_ptr++ = *p;

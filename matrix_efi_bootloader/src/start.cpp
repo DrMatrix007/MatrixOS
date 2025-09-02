@@ -4,6 +4,7 @@
 #include "efi_error.hpp"
 #include "efierr.h"
 #include "efiprot.h"
+#include "elf_loader.hpp"
 #include "match.hpp"
 #include "protocols/graphics_protocol.hpp"
 #include "protocols/simple_file_system_protocol.hpp"
@@ -19,15 +20,14 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 
     ST = SystemTable;
 
-    system_table table(SystemTable, ImageHandle);
-
-    mst::optional<simple_output_protocol&> out_opt = table.out();
+    g_system_table = system_table(SystemTable, ImageHandle);
+    mst::optional<simple_output_protocol&> out_opt = g_system_table.out();
 
     match_or(simple_out, out_opt, return -1);
 
     simple_out.clear_screen();
 
-    auto gop_opt = table.locate_protocol<graphics_protocol>();
+    auto gop_opt = g_system_table.locate_protocol<graphics_protocol>();
     simple_out.output_string((wchar_t*)L"hello world\n");
 
     match_or(gop, gop_opt, return EFI_ABORTED);
@@ -39,7 +39,7 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
         gop.set_mode(index);
     }
 
-    auto fs_opt = table.locate_protocol<simple_filesystem_protocol>();
+    auto fs_opt = g_system_table.locate_protocol<simple_filesystem_protocol>();
     match(efi_error, err, fs_opt)
     {
         simple_out.print(L"%s\n", err.as_string());
@@ -52,11 +52,11 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
 
     match_or(kernel_file, vol.open(kernel_path, EFI_FILE_MODE_READ, 0), return EFI_ABORTED);
 
-    simple_out.print(L"got root!");
-    kernel_file.set_position(-1);
-    match_or(pos, kernel_file.get_position(), return EFI_ABORTED);
-    simple_out.print(L"%d", pos);
+    load_file(kernel_file);
 
 
     return efi_success;
 }
+
+// for static stuff, not relevant anyway. the kernel doesnt stop, and if it stops, the pc is off.
+extern "C" void atexit(){}

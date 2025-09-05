@@ -82,8 +82,10 @@ static_assert(sizeof(elf_program_header) == 0x38,
 static_assert(sizeof(elf_section_header) == 0x40,
               "this header should be of size 0x40!");
 
-using entry_func = void (*)(mbi::boot_info info);
-
+extern "C"
+{
+    typedef void(* entry_func)(mbi::boot_info* info);   
+}
 entry_func load_file(simple_filesystem_file& kernel);
 } // namespace matrix_efi
 

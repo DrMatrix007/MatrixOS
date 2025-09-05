@@ -26,8 +26,7 @@ target_compile_options(matrix_efi_bootloader PRIVATE
     -fno-exceptions
     # -fno-rtti only for cpp.
     -Werror 
-    -m64 
-    # -mabi=ms 
+    -m64
     -ffreestanding
 )
 

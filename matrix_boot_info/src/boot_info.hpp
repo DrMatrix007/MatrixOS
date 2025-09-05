@@ -5,8 +5,11 @@
 
 namespace mbi
 {
-    struct boot_info
+    
+    struct __attribute__((packed)) boot_info
     {
+        boot_info(frame_buffer buffer);
+
         frame_buffer m_buffer;
     };
 }

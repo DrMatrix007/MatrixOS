@@ -4,7 +4,6 @@
 #include "efi.h"
 #include "efi_error.hpp"
 #include "efidef.h"
-#include "result.hpp"
 
 namespace matrix_efi
 {

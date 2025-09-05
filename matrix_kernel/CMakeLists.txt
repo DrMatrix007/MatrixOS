@@ -3,8 +3,8 @@ cmake_minimum_required(VERSION 4.0)
 
 project(matrix_kernel VERSION 0.1.0 LANGUAGES C CXX)
 
-set(CMAKE_CXX_COMPILER /bin/clang++)
-set(CMAKE_C_COMPILER /bin/clang)
+set(CMAKE_CXX_COMPILER clang++)
+set(CMAKE_C_COMPILER clang)
 
 file(GLOB_RECURSE SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 file(GLOB_RECURSE HEADER_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.hpp")

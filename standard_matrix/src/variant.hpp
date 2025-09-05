@@ -6,7 +6,7 @@
 #include "variant_iterator.hpp"
 #include "ref.hpp"
 
-#include "stddef.h"
+#define size_t __SIZE_TYPE__
 
 // #if __has_include(<new>)
 // #include <new>

@@ -1,6 +1,5 @@
 #include "elf_loader.hpp"
 #include "boot_services.hpp"
-#include "efidef.h"
 #include "int_types.hpp"
 #include "match.hpp"
 #include "system_table.hpp"
@@ -17,8 +16,6 @@ entry_func load_file(simple_filesystem_file& kernel)
     kernel.set_position(0);
 
     kernel.read(&header, &header_size);
-
-    out.print(L"_%d_ ", header.e_shnum);
 
     for (int64 i = 0; i < header.e_phnum; i++)
     {
@@ -41,7 +38,7 @@ entry_func load_file(simple_filesystem_file& kernel)
         kernel.read(ptr, &image_size);
     }
     
-    out.print(L"(%d)",     ((int32(*)())header.e_entry)());
+    return (entry_func)header.e_entry;
 
 
     return nullptr;

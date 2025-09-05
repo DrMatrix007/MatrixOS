@@ -12,14 +12,10 @@
             "id": "c4d19c89800a23c3",
             "type": "leaf",
             "state": {
-              "type": "markdown",
-              "state": {
-                "file": "UEFI Bootloader/What is a bootloader?.md",
-                "mode": "source",
-                "source": false
-              },
+              "type": "empty",
+              "state": {},
               "icon": "lucide-file",
-              "title": "What is a bootloader?"
+              "title": "New tab"
             }
           }
         ]
@@ -187,8 +183,10 @@
       "bases:Create new base": false
     }
   },
-  "active": "c4d19c89800a23c3",
+  "active": "6ea45db7747535e0",
   "lastOpenFiles": [
+    "kfjsdklfjsdklf.canvas",
+    "shit.md",
     "UEFI Bootloader/What is a bootloader?.md",
     "UEFI Bootloader/What is a UEFI boot loader?.md",
     "Welcome.md",

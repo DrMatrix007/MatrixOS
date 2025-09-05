@@ -16,7 +16,9 @@ struct __attribute__((packed)) pixel
     uint8 alpha;
 };
 
-class frame_buffer
+
+
+class __attribute__((packed)) frame_buffer
 {
 public:
     frame_buffer(void* buffer, uint64 width, uint64 height);

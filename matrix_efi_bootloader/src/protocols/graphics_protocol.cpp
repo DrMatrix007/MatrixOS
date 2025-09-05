@@ -28,11 +28,9 @@ mst::optional<int> graphics_protocol::try_find_mode(
     {
         m_raw->QueryMode(m_raw.get(), i, &sizeofinfo, &info);
 
-        // Print(L"size: %d %d\n", info->HorizontalResolution,
-        // info->VerticalResolution);
+
         match(output, verbose)
         {
-            // output.output_string((wchar_t*)L"whhjghzkjhzxkjhkjhfsjkfhsdkjfhsdkjfhsjjat?\n");
             output.print(L"size: %d %d\n", info->HorizontalResolution,
                          info->VerticalResolution);
         }

@@ -31,4 +31,8 @@ uint64 frame_buffer::height()
     return m_height;
 }
 
+
+static_assert(sizeof(pixel) == 4);
+static_assert(sizeof(frame_buffer) == 24);
+
 } // namespace mbi

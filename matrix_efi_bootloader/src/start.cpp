@@ -3,6 +3,7 @@
 
 #include "boot_info.hpp"
 #include "efi_error.hpp"
+#include "efiapi.h"
 #include "efierr.h"
 #include "efiprot.h"
 #include "elf_loader.hpp"
@@ -67,16 +68,12 @@ extern "C" EFI_STATUS EFIAPI efi_main(EFI_HANDLE ImageHandle,
     entry_func entry = load_file(kernel_file);
 
     mbi::boot_info info(gop.frame_buffer());
-
-    out.print(L"%p ", read_cr3());
-    out.print(L"%p ", read_cr0());
-    out.print(L"%p ", &info);
-
-
+ 
+    g_system_table.exit_boot_services();
     // this is sysv ABI type shit
     // this calls to the entry fn
     asm volatile("mov %0, %%rdi\n"
-                //  "call *%1\n"
+                 "call *%1\n"
                  :
                  : "r"(&info), "r"(entry)
                  : "rdi");

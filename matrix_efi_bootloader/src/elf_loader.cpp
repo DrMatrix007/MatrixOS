@@ -8,6 +8,7 @@ namespace matrix_efi
 {
 entry_func load_file(simple_filesystem_file& kernel)
 {
+    auto&& boot = g_system_table.boot_services();
     match_or(out, g_system_table.out(), return nullptr);
 
     elf_header header;
@@ -27,19 +28,31 @@ entry_func load_file(simple_filesystem_file& kernel)
         {
             continue;
         }
-        void* ptr = reinterpret_cast<decltype(ptr)>(pheader.p_vaddr);
+        void* ptr =
+            reinterpret_cast<decltype(ptr)>(pheader.p_vaddr & 0xFFFFFFFFFF000);
+        void* actual_ptr =
+            reinterpret_cast<decltype(actual_ptr)>(pheader.p_vaddr);
 
-        g_system_table.boot_services().allocate_pages(
-            allocate_type::address, memory_type::loader_code,
-            (pheader.p_memsz + page_size - 1) / page_size, &ptr);
+        int64 pages_amount = (pheader.p_memsz + page_size - 1) / page_size;
+
+        match(err,
+              boot.allocate_pages(allocate_type::address,
+                                  memory_type::loader_code, pages_amount, &ptr))
+        {
+            out.print(L"Error: %p %s ", ptr, err.as_string());
+            return nullptr;
+        }
+        out.print(L"works ");
+
+        // boot.set_mem(ptr, pages_amount * page_size,0);
 
         kernel.set_position(pheader.p_offset);
         uintn image_size = pheader.p_filesz;
+
         kernel.read(ptr, &image_size);
     }
-    
-    return (entry_func)header.e_entry;
 
+    return (entry_func)header.e_entry;
 
     return nullptr;
 }

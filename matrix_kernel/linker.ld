@@ -3,7 +3,7 @@ ENTRY(efi_main)
 
 SECTIONS
 {
-	. = 0x4000
+	. = 1K
 	.text : ALIGN(0x1000)
 	{
 		*(.text)

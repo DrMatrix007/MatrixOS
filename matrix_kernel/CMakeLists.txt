@@ -22,6 +22,7 @@ target_compile_options(matrix_kernel PUBLIC
     -Werror
     -ffreestanding
     -fno-stack-protector
+    -fdeclspec
 )
 
 target_link_options(matrix_kernel PUBLIC

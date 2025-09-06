@@ -35,4 +35,9 @@ efi_result boot_services::free_pages(void* address, uintn pages)
     return {};
 }
 
+void boot_services::set_mem(void* buff, uintn size, uint8 val)
+{
+    m_raw->SetMem(buff, size, val);
+}
+
 } // namespace matrix_efi

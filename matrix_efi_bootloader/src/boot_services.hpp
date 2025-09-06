@@ -4,6 +4,7 @@
 #include "efi.h"
 #include "efi_error.hpp"
 #include "efidef.h"
+#include "int_types.hpp"
 
 namespace matrix_efi
 {
@@ -47,6 +48,8 @@ public:
                               uintn pages, void** ptr);
 
     efi_result free_pages(void* address, uintn pages);
+
+    void set_mem(void* buff, uintn size, uint8 val);
 
 private:
     raw* m_raw;

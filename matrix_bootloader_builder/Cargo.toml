@@ -1,0 +1,9 @@
+[package]
+name = "matrix_bootloader_builder"
+version = "0.1.0"
+edition = "2024"
+
+build = "build.rs"
+
+[build-dependencies]
+matrix_bootloader = { path = "../matrix_bootloader", artifact = "bin", target = "x86_64-unknown-uefi" }

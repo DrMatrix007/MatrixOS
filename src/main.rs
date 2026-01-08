@@ -1,12 +1,13 @@
 use std::process::Command;
 
-use matrix_bootloader_builder::get_image;
+use matrix_bootloader_builder::get_bootloader_image;
+
 
 fn main() {
-    std::fs::write("matrix_os.img", get_image()).expect("faliled to write image");
+    std::fs::write("matrix_os.img", get_bootloader_image()).expect("faliled to write image");
 
     let status = Command::new("qemu-system-x86_64")
-        .args(&[
+        .args([
             "-L",
             "OVMF",
             "-drive",
@@ -15,7 +16,7 @@ fn main() {
             "matrix_os.img",
         ])
         .status()
-        .expect(&format!("failed to run qemu"));
+        .expect("failed to run qemu");
 
     if !status.success() {
         panic!("command failed with status {}", status);

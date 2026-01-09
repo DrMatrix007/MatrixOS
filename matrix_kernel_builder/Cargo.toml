@@ -1,0 +1,10 @@
+[package]
+name = "matrix_kernel_builder"
+version = "0.1.0"
+edition = "2024"
+
+build = "build.rs"
+
+[build-dependencies]
+matrix_kernel = { path = "../matrix_kernel", artifact = "bin", target = "x86_64-unknown-none" }
+matrix_images = { path = "../matrix_images" }

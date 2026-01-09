@@ -3,9 +3,9 @@
 
 use log::info;
 use uefi::{
-    Status,
     boot::{self},
     proto::media::fs::SimpleFileSystem,
+    Status,
 };
 
 #[uefi::entry]
@@ -15,14 +15,9 @@ fn main() -> Status {
     let fs_handle = boot::get_handle_for_protocol::<SimpleFileSystem>().unwrap();
     let mut fs = boot::open_protocol_exclusive::<SimpleFileSystem>(fs_handle).unwrap();
 
-    let root = fs.open_volume().unwrap();
+    let _root = fs.open_volume().unwrap();
 
     info!("Hello from Matrix bootloader!");
 
-    hlt();
-}
-fn hlt() -> ! {
-    loop {
-        unsafe { core::arch::asm!("hlt") }
-    }
+    return Status::SUCCESS;
 }

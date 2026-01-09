@@ -1,55 +1,21 @@
-use std::{path::PathBuf, process::Command};
+use matrix_images::image::Image;
+use std::{env, fs, path::PathBuf};
 
-pub fn run_cmd(cmd: &str, args: &[&str]) {
-    let status = Command::new(cmd)
-        .args(args)
-        .status()
-        .expect(&format!("failed to execute {}", cmd));
+fn main() {
+    let bootloader_path = env::var("CARGO_BIN_FILE_MATRIX_BOOTLOADER")
+        .expect("CARGO_BIN_FILE_MATRIX_BOOTLOADER is not set");
 
-    if !status.success() {
-        panic!("command `{}` failed with status {}", cmd, status);
-    }
-}
+    let bootloader = fs::read(&bootloader_path).expect("failed to read bootloader binary");
 
-pub fn main() {
-    let bootloader_path =
-        std::env::var("CARGO_BIN_FILE_MATRIX_BOOTLOADER").expect("not bootloader???");
+    let out_path =
+        PathBuf::from(env::var("OUT_DIR").expect("OUT_DIR is not set")).join("bootloader.img");
 
-    let out_dir_path = PathBuf::from(std::env::var("OUT_DIR").unwrap());
-    let out_dir = out_dir_path.to_str().unwrap();
+    let mut image = Image::new(&out_path).expect("failed to create image");
 
-    let path_buff = out_dir_path.join("fat.img");
-    let output_file = path_buff.as_path().to_str().unwrap();
+    image.create_dir("/EFI/").unwrap();
+    image.create_dir("/EFI/BOOT/").unwrap();
 
-    run_cmd(
-        "dd",
-        &[
-            "if=/dev/zero",
-            format!("of={}", output_file).as_str(),
-            "bs=1k",
-            "count=1440",
-        ],
-    );
-    run_cmd("mkdir", &["-p", out_dir]);
-    run_cmd("mformat", &["-i", output_file, "-f", "1440", "::"]);
-    run_cmd("mmd", &["-i", output_file, "::/EFI"]);
-    run_cmd("mmd", &["-i", output_file, "::/EFI/BOOT"]);
-    run_cmd(
-        "mcopy",
-        &[
-            "-i",
-            &output_file,
-            &bootloader_path,
-            "::/EFI/BOOT/BOOTX64.EFI",
-        ],
-    );
-    run_cmd(
-        "mcopy",
-        &[
-            "-i",
-            &output_file,
-            "startup.nsh",
-            "::/startup.nsh",
-        ],
-    );
+    image
+        .write_new_file("/EFI/BOOT/BOOTX64.EFI", &bootloader)
+        .unwrap();
 }

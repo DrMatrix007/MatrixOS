@@ -18,4 +18,10 @@ fn main() {
     image
         .write_new_file("/EFI/BOOT/BOOTX64.EFI", &bootloader)
         .unwrap();
+
+    image.create_dir("/matrix/").unwrap();
+
+    image
+        .write_new_file("/matrix/config.json", include_bytes!("config.json"))
+        .unwrap();
 }

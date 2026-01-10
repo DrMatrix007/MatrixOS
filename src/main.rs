@@ -15,9 +15,9 @@ fn main() {
             "-drive",
             "if=pflash,format=raw,readonly=on,file=OVMF/OVMF.4m.fd",
             "-drive",
-            "file=matrix_os.img",
+            "file=matrix_os.img,format=raw",
             "-drive",
-            "file=matrix_bootloader.img"
+            "file=matrix_bootloader.img,format=raw"
         ])
         .status()
         .expect("failed to run qemu");

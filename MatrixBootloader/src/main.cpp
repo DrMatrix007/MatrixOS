@@ -1,24 +1,11 @@
 #include <efi.h>
 #include <efilib.h>
 
-extern "C" EFI_STATUS efi_main(EFI_HANDLE ImageHandle, EFI_SYSTEM_TABLE *SystemTable)
+import MatrixEfiTable;
+
+extern "C" EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table)
 {
-    EFI_STATUS Status;
-    EFI_INPUT_KEY Key;
+    mefi::MatrixEfiTable table;
 
-    ST = SystemTable;
-
-    Print(L"what");
-
-    Status = ST->ConOut->OutputString(ST->ConOut, (wchar_t*)L"Hello World\r\n");
-    if (EFI_ERROR(Status))
-        return Status;
-
-    Status = ST->ConIn->Reset(ST->ConIn, FALSE);
-    if (EFI_ERROR(Status))
-        return Status;
-
-    while ((Status = ST->ConIn->ReadKeyStroke(ST->ConIn, &Key)) == EFI_NOT_READY) ;
-
-    return Status;
+    return EFI_SUCCESS;
 }

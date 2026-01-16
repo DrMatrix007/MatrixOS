@@ -1,3 +1,5 @@
+BUILD_DIR := ./build
+
 ARCH      := x86_64
 TARGET    := x86_64-unknown-windows
 OUT       := BOOTX64.EFI
@@ -36,20 +38,19 @@ LDFLAGS := \
 	-nostdlib \
 	-Wl,-entry:efi_main \
 	-Wl,-subsystem:efi_application \
-	-Tlinker.lds \
-	-fuse-ld=lld-link
+	-fuse-ld=lld-link \
+	-Wl,/machine:x64
 
-C_SRCS   := $(find . -name '*.c')
-CPP_SRCS := $(find . -name '*.cpp')
 
-OBJS := $(C_SRCS:.c=.o) $(CPP_SRCS:.cpp=.o)
+SRCS := $(shell find $(SRC_DIRS) -name '*.cpp' -or -name '*.c')
+OBJS := $(SRCS:%=$(BUILD_DIR)/%.o)
 
 all: $(OUT)
 
-%.o: %.c
+$(BUILD_DIR)/%.c.o: %.c
 	$(CC) $(CFLAGS) -c $< -o $@
 
-%.o: %.cpp
+$(BUILD_DIR)/%.cpp.o: %.cpp
 	$(CXX) $(CXXFLAGS) -c $< -o $@
 
 $(OUT): $(OBJS)

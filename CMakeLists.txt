@@ -4,7 +4,32 @@ project(MatrixOS VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+add_library(EfiProject INTERFACE)
+target_compile_options(EfiProject INTERFACE
+        -target x86_64-unknown-windows
+        -ffreestanding
+        -fshort-wchar
+        -mno-red-zone
+)
+target_link_options(EfiProject INTERFACE
+        -target x86_64-unknown-windows
+        -nostdlib
+        -Wl,-entry:efi_main
+        -Wl,-subsystem:efi_application
+        -fuse-ld=lld-link
+)
+
+add_library(ElfProject INTERFACE)
+target_compile_options(ElfProject INTERFACE)
+target_link_options(ElfProject INTERFACE)
+
+
+
+
+add_subdirectory(StandardMatrix)
 add_subdirectory(MatrixBootloader)
+add_subdirectory(MatrixKernel)
+
 get_target_property(BOOTLOADER_BUILD_DIR MatrixBootloader BINARY_DIR)
 set(BOOTLOADER_BIN ${BOOTLOADER_BUILD_DIR}/MatrixBootloader)
 

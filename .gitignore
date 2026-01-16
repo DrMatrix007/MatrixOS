@@ -1,1 +1,3 @@
-**.o
+**/out
+**/cmake-build-debug
+**/.idea

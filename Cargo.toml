@@ -1,8 +1,0 @@
-[package]
-name = "MatrixOS"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-matrix_bootloader_builder = { path = "matrix_bootloader_builder" }
-matrix_kernel_builder = { path = "matrix_kernel_builder" }

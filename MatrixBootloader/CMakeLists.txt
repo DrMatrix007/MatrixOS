@@ -10,6 +10,8 @@ file(GLOB_RECURSE SRC "src/**.c" "src/**.cpp" "src/**.h" "src/**.hpp" ${SRC_MODU
 add_executable(MatrixBootloader ${SRC})
 target_sources(MatrixBootloader PRIVATE FILE_SET CXX_MODULES FILES ${SRC_MODULES})
 
+target_link_libraries(MatrixBootloader PRIVATE StandardMatrix)
+
 target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi")
 target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi/x86_64")
 target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi/protocol")
@@ -28,3 +30,5 @@ target_link_options(MatrixBootloader PRIVATE
         -Wl,-subsystem:efi_application
         -fuse-ld=lld-link
 )
+
+

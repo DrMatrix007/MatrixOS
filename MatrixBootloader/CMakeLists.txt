@@ -5,24 +5,38 @@ file(GLOB_RECURSE SRC "src/**.c" "src/**.cpp" "src/**.h" "src/**.hpp")
 
 message(STATUS "Source files: ${SRC}")
 
-add_executable(MatrixBootloader ${SRC})
+add_executable(MatrixBootloaderBin ${SRC})
 
-target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi")
-target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi/x86_64")
-target_include_directories(MatrixBootloader PRIVATE "/usr/include/efi/protocol")
+target_include_directories(MatrixBootloaderBin PRIVATE "/usr/include/efi")
+target_include_directories(MatrixBootloaderBin PRIVATE "/usr/include/efi/x86_64")
+target_include_directories(MatrixBootloaderBin PRIVATE "/usr/include/efi/protocol")
 
-target_compile_options(MatrixBootloader PRIVATE
-    -target x86_64-unknown-windows
-    -ffreestanding
-    -fshort-wchar
-    -mno-red-zone
-    -Ipath/to/gnu-efi/inc -Ipath/to/gnu-efi/inc/x86_64 -Ipath/to/gnu-efi/inc/protocol
+target_compile_options(MatrixBootloaderBin PRIVATE
+        -ffreestanding
+        -fshort-wchar
+        -mno-red-zone
+        -fno-stack-protector
+        -fpic
+        -fshort-wchar
 )
 
-target_link_options(MatrixBootloader PRIVATE
-    -target x86_64-unknown-windows
-    -nostdlib
-    -Wl,-entry:efi_main
-    -Wl,-subsystem:efi_application
-    -fuse-ld=lld-link
+target_link_options(MatrixBootloaderBin PRIVATE
+        /lib/libgnuefi.a
+        /lib/libefi.a
+        /usr/lib/crt0-efi-x86_64.o
+        -nostdlib
+        -shared
+        -Bsymbolic
+        -fuse-ld=lld
+        -T/usr/lib/elf_x86_64_efi.lds
+        #    -Wl,-subsystem:efi_application
 )
+
+add_custom_command(OUTPUT ${CMAKE_CURRENT_BINARY_DIR}/MatrixBootloader
+        COMMAND objcopy -j .text -j .sdata -j .data -j .rodata -j .dynamic -j .dynsym -j .rel -j .rela -j .reloc
+        --subsystem=10 --target=efi-app-x86_64 ${CMAKE_CURRENT_BINARY_DIR}/MatrixBootloaderBin ${CMAKE_CURRENT_BINARY_DIR}/BOOTX64.efi
+        COMMENT "Converting ELF to EFI"
+        DEPENDS MatrixBootloaderBin
+)
+
+add_custom_target(MatrixBootloader DEPENDS ${CMAKE_CURRENT_BINARY_DIR}/MatrixBootloader)

@@ -4,7 +4,10 @@ project(MatrixOSRunner VERSION 0.1.0 LANGUAGES C CXX)
 set(CMAKE_CXX_STANDARD 26)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
+
 add_subdirectory(MatrixBootloader)
+get_target_property(BOOTLOADER_BUILD_DIR MatrixBootloader BINARY_DIR)
+set(BOOTLOADER_BIN ${BOOTLOADER_BUILD_DIR}/BOOTX64.efi)
 
 set(ISO_STAGING_DIR ${CMAKE_CURRENT_BINARY_DIR}/iso_root)
 set(FAT_IMAGE ${CMAKE_CURRENT_BINARY_DIR}/image.img)
@@ -17,7 +20,7 @@ add_custom_command(OUTPUT ${FAT_IMAGE}
     COMMAND mformat -i ${FAT_IMAGE} -f 1440 ::
     COMMAND mmd -i ${FAT_IMAGE} ::/EFI
     COMMAND mmd -i ${FAT_IMAGE} ::/EFI/BOOT
-    COMMAND mcopy -i ${FAT_IMAGE} $<TARGET_FILE:MatrixBootloader> ::/EFI/BOOT/BOOTX64.EFI
+    COMMAND mcopy -i ${FAT_IMAGE} ${BOOTLOADER_BIN} ::/EFI/BOOT/BOOTX64.EFI
     COMMENT "Generating bootable ISO image"
     USES_TERMINAL
 )

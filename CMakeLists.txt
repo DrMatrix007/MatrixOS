@@ -23,9 +23,6 @@ add_library(ElfProject INTERFACE)
 target_compile_options(ElfProject INTERFACE)
 target_link_options(ElfProject INTERFACE)
 
-
-
-
 add_subdirectory(StandardMatrix)
 add_subdirectory(MatrixBootloader)
 add_subdirectory(MatrixKernel)
@@ -60,5 +57,4 @@ target_compile_definitions(
     PRIVATE IMG_PATH="${FAT_IMAGE}"
 )
 
-add_dependencies(MatrixOSRunner Image)
-add_custom_target(MatrixOS DEPENDS MatrixOSRunner)
+add_dependencies(MatrixOSRunner Image MatrixKernel)

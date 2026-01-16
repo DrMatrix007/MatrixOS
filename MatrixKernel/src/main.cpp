@@ -1,9 +1,9 @@
-import standard_test;
+import  mstd.optional;
+#include <optional>
 
-void main()
+int main()
 {
-    if (2 != mtd::add(1,1))
-    {
-        return ;
-    }
+
+    std::optional<int> a{};
+    return 0;
 }

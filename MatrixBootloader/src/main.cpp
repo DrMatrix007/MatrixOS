@@ -2,7 +2,7 @@
 #include <efilib.h>
 
 import MatrixEfiTable;
-import standard_test;
+import mstd.optional;
 
 extern "C" EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system_table)
 {
@@ -10,10 +10,7 @@ extern "C" EFI_STATUS efi_main(EFI_HANDLE image_handle, EFI_SYSTEM_TABLE *system
 
     mefi::MatrixEfiTable table;
 
-    if (2 != mtd::add(1,1))
-    {
-        return -1;
-    }
+    mstd::optional<int> m(10);
 
     EFI_INPUT_KEY key;
 

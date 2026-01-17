@@ -9,7 +9,7 @@ pub fn get_target_dir() -> Result<PathBuf> {
 
 pub fn run_qemu(drive_path: PathBuf) -> Result<()> {
     
-    println!("🚀  Launching QEMU...");
+    println!("    🚀  Launching QEMU...");
     Command::new("qemu-system-x86_64")
         .arg("-drive")
         .arg("if=pflash,format=raw,readonly=on,file=ovmf/OVMF.4m.fd")

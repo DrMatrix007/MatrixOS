@@ -3,12 +3,13 @@ mod builder;
 mod clean;
 mod image;
 mod runner;
+mod kernel;
 
 use anyhow::Result;
 use clap::{Parser, Subcommand};
 
 use crate::{
-    bootloader::build_bootloader_project, clean::clean_taret, image::create_image, runner::run_qemu,
+    bootloader::build_bootloader_project, clean::clean_taret, image::create_image, kernel::build_kernel_project, runner::run_qemu
 };
 
 #[derive(Parser)]
@@ -32,13 +33,15 @@ fn main() -> Result<()> {
     match cli.command {
         Commands::BuildImage => {
             build_bootloader_project(cli.release)?;
+            build_kernel_project(cli.release)?;
         }
         Commands::Clean => {
             clean_taret()?;
         }
         Commands::Run => {
-            let bin = build_bootloader_project(cli.release)?;
-            let drive_path = create_image(bin)?;
+            let bootloader = build_bootloader_project(cli.release)?;
+            let kernel = build_kernel_project(cli.release)?;
+            let drive_path = create_image(bootloader, kernel)?;
             run_qemu(drive_path)?;
         }
     }

@@ -8,7 +8,7 @@ static BOOTLAODER_TARGET: &str = "x86_64-unknown-uefi";
 
 pub fn build_bootloader_project(release: bool) -> Result<PathBuf> {
     let mode = if release { "release" } else { "debug" };
-    println!("🏗️  Building MatrixOS in {} mode...", mode);
+    println!("    🥾  Building bootloader in {} mode...", mode);
 
     build_project(BuildOptions {
         package: BOOTLOADER_PACKAGE_NAME.to_string(),

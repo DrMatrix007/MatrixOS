@@ -9,7 +9,5 @@ fn main() -> Status {
     uefi::helpers::init().unwrap();
     info!("Hello worldasdasds!");
 
-    loop {
-        unsafe { core::arch::asm!("hlt") }
-    }
+    Status::SUCCESS
 }

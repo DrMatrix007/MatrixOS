@@ -20,6 +20,7 @@ struct test_class : non_movable
         _ref--;
     }
 
+public:
     int& _ref;
 };
 

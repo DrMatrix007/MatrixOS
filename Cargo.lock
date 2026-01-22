@@ -179,16 +179,25 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5e5032e24019045c762d3c0f28f5b6b8bbf38563a65908389bf7978758920897"
 
 [[package]]
+name = "matrix_boot_args"
+version = "0.1.0"
+
+[[package]]
 name = "matrix_bootloader"
 version = "0.1.0"
 dependencies = [
+ "anyhow",
  "log",
+ "matrix_boot_args",
  "uefi",
 ]
 
 [[package]]
 name = "matrix_kernel"
 version = "0.1.0"
+dependencies = [
+ "matrix_boot_args",
+]
 
 [[package]]
 name = "memchr"

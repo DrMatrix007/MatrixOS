@@ -1,23 +1,14 @@
 use anyhow::{Context, Result};
-use uefi::{
-    CStr16, cstr16,
-    proto::media::{
-        file::{File, FileAttribute, FileMode},
-        fs::SimpleFileSystem,
-    },
-};
+use uefi::{CStr16, cstr16};
 
-use crate::protocols::get_procotol;
+use crate::loader::{parser::parse_elf, read_file::read_file};
 
-static PATH_TO_KERNEL: &CStr16 = cstr16!("/");
+static PATH_TO_KERNEL: &CStr16 = cstr16!("kernel.mat");
 
 pub fn load_kernel() -> Result<()> {
-    let mut fs = get_procotol::<SimpleFileSystem>().context("cant get filesystem")?;
+    let kernel = read_file(PATH_TO_KERNEL).context("reading kernel from disk")?;
 
-    let _kernel_file = fs
-        .open_volume()?
-        .open(PATH_TO_KERNEL, FileMode::Read, FileAttribute::empty())
-        .context("cant get kernel file")?;
+    parse_elf(&kernel).context("parsing the kernel")?;
 
     Ok(())
 }

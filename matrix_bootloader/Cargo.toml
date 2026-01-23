@@ -13,3 +13,4 @@ uefi = { version = "0.36.1", features = [
 matrix_boot_args = { path = "../matrix_boot_args" }
 anyhow = { version = "1.0.100", default-features = false }
 bytemuck = { version = "1.24.0", features = ["derive"] }
+bitflags = "2.10.0"

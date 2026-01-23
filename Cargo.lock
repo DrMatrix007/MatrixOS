@@ -207,6 +207,7 @@ name = "matrix_bootloader"
 version = "0.1.0"
 dependencies = [
  "anyhow",
+ "bitflags",
  "bytemuck",
  "log",
  "matrix_boot_args",

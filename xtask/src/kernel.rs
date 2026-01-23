@@ -1,19 +1,36 @@
-use anyhow::Context;
 use anyhow::Result;
-use std::path::PathBuf;
+use std::path::Path;
 
-use crate::builder::{BuildOptions, build_project};
+use crate::{
+    builder::{BuildConfiguration, BuildOptions, build_project},
+    project::Project,
+};
+
 static KERNEL_PACKAGE_NAME: &str = "matrix_kernel";
 static KERNEL_TARGET: &str = "x86_64-unknown-none";
+static KERNEL_PATH: &str = "kernel.mat";
 
-pub fn build_kernel_project(release: bool) -> Result<PathBuf> {
-    let mode = if release { "release" } else { "debug" };
-    println!("    ⁉️  Building Kernel in {} mode...", mode);
+#[derive(Debug, Clone, Copy, Default)]
+pub struct KernelProject;
 
-    build_project(BuildOptions {
-        package: KERNEL_PACKAGE_NAME.to_string(),
-        target: KERNEL_TARGET.to_string(),
-        release,
-    })
-    .context("❌ No binary found")
+impl Project for KernelProject {
+    fn build(&self, configuration: BuildConfiguration) -> Result<std::path::PathBuf> {
+        println!("    ⁉️  Building Kernel in {} mode", configuration);
+        build_project(BuildOptions {
+            package: KERNEL_PACKAGE_NAME,
+            target: KERNEL_TARGET,
+            configuration,
+        })
+    }
+
+    fn build_image_artifact(&self, esp: &Path, binary: &Path, workspace_root: &Path) -> Result<()> {
+        std::fs::copy(binary, esp.join(KERNEL_PATH))?;
+        println!(
+            "    📂 Binary copied {} to {}",
+            binary.strip_prefix(workspace_root)?.display(),
+            KERNEL_PATH
+        );
+
+        Ok(())
+    }
 }

@@ -1,27 +1,56 @@
 use anyhow::{Result, anyhow};
 use cargo_metadata::Message;
+use std::fmt::Display;
 use std::path::PathBuf;
 use std::process::{Command, Stdio};
 
-pub struct BuildOptions {
-    pub package: String,
-    pub target: String,
-    pub release: bool,
+#[derive(Debug, Clone, Copy)]
+pub enum BuildConfiguration {
+    Release,
+    Debug,
+}
+
+impl Display for BuildConfiguration {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(
+            f,
+            "{}",
+            match self {
+                Self::Release => "release",
+                Self::Debug => "debug",
+            }
+        )
+    }
+}
+
+impl BuildConfiguration {
+    pub fn from_is_release(is_release: bool) -> Self {
+        match is_release {
+            true => BuildConfiguration::Release,
+            false => BuildConfiguration::Debug,
+        }
+    }
+}
+
+pub struct BuildOptions<'a, 'b> {
+    pub package: &'a str,
+    pub target: &'b str,
+    pub configuration: BuildConfiguration,
 }
 
 pub fn build_project(opts: BuildOptions) -> Result<PathBuf> {
     let mut command = Command::new("cargo");
 
-    command.args(&[
+    command.args([
         "build",
         "--package",
-        &opts.package,
+        opts.package,
         "--target",
-        &opts.target,
+        opts.target,
         "--message-format=json-render-diagnostics",
     ]);
 
-    if opts.release {
+    if let BuildConfiguration::Release = opts.configuration {
         command.arg("--release");
     }
 

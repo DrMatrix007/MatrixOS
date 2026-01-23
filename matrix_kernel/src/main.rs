@@ -5,8 +5,8 @@ pub mod entry_point;
 
 use core::panic::PanicInfo;
 
-pub fn kernel_entry() {
-    loop{}
+pub fn kernel_entry() -> u64 {
+    0x1b
 }
 
 #[panic_handler]

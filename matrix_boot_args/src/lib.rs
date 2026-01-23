@@ -1,5 +1,5 @@
 #![no_std]
 
-pub struct BootInfo {
+pub type MatrixEntryPoint = fn() -> u64;
 
-}
+pub struct BootInfo {}

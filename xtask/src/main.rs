@@ -1,9 +1,9 @@
 mod bootloader;
 mod builder;
+pub mod clippy;
 mod kernel;
 pub mod project;
 mod runner;
-pub mod clippy;
 
 use std::{
     path::PathBuf,
@@ -62,9 +62,10 @@ fn main() -> Result<()> {
             run_workspace(workspace, build_configuration)?;
         }
         Commands::Clippy => {
-            clippy_workspace(workspace);
+            clippy_workspace(workspace)?;
         }
     }
+
     Ok(())
 }
 
@@ -79,11 +80,13 @@ fn run_workspace(
     workspace: Workspace,
     build_configuration: BuildConfiguration,
 ) -> Result<(), anyhow::Error> {
-    let workspace_root = get_workspace_root();
-    let mut esp = get_target_dir().context("getting target dir for image")?;
-    esp.push(format!("{}/esp/", build_configuration));
     let (bootloader, kernel) =
         build_projects(&workspace, build_configuration).context("building projects for image")?;
+
+    let workspace_root = get_workspace_root();
+    let mut esp = get_target_dir().context("getting target dir for image")?;
+
+    esp.push(format!("{}/esp/", build_configuration));
     workspace
         .bootloader
         .build_image_artifact(&esp, &bootloader, &workspace_root)
@@ -94,7 +97,9 @@ fn run_workspace(
         .context("builing kernel artifact")?;
     let mut ovmf_root = workspace_root.clone();
     ovmf_root.push("ovmf");
+
     run_qemu(&ovmf_root, &esp).context("running qemu")?;
+
     Ok(())
 }
 

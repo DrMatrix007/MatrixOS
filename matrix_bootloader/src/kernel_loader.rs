@@ -3,7 +3,7 @@ use log::info;
 use matrix_boot_args::MatrixEntryPoint;
 use uefi::{CStr16, cstr16};
 
-use crate::loader::{loader::load_elf, read_file::read_file};
+use crate::elf_loader::{loader::load_elf, read_file::read_file};
 
 static PATH_TO_KERNEL: &CStr16 = cstr16!("kernel.mat");
 
@@ -12,9 +12,7 @@ pub fn load_kernel() -> Result<MatrixEntryPoint> {
 
     let entry = load_elf(&kernel).context("parsing the kernel")?;
 
-    let res = entry();
-
-    info!("got value = {res}");
+    info!("parsed the elf successfuly");
 
     Ok(entry)
 }

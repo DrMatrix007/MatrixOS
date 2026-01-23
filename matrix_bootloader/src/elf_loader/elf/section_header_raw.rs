@@ -1,6 +1,6 @@
 use bytemuck::{Pod, Zeroable};
 
-use crate::loader::elf::{FileAddress, RvaAddress};
+use crate::elf_loader::elf::{FileAddress, RvaAddress};
 
 #[repr(C, packed)]
 #[derive(Clone, Copy, Debug, Pod, Zeroable)]

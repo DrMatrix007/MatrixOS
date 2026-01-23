@@ -3,7 +3,7 @@ use bytemuck::{Pod, Zeroable};
 
 use crate::{
     impl_try_from_enum_values,
-    loader::elf::{FileAddress, RvaAddress, enum_values::ValueMismatch},
+    elf_loader::elf::{FileAddress, RvaAddress, enum_values::ValueMismatch},
 };
 
 #[derive(Debug)]

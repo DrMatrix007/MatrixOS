@@ -6,7 +6,7 @@ use log::info;
 use matrix_boot_args::MatrixEntryPoint;
 use uefi::boot::{MemoryType, PAGE_SIZE};
 
-use crate::loader::elf::{
+use crate::elf_loader::elf::{
     header_raw::{ELF_MAGIC, ElfHeaderRaw},
     program_header_raw::{ElfProgramHeaderRaw, ElfProgramHeaderType},
     section_header_raw::ElfSectionHeaderRaw,

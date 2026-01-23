@@ -2,7 +2,7 @@ use bytemuck::{Pod, Zeroable};
 
 use crate::{
     impl_try_from_enum_values,
-    loader::elf::{FileAddress, RvaAddress, enum_values::ValueMismatch},
+    elf_loader::elf::{FileAddress, RvaAddress, enum_values::ValueMismatch},
 };
 
 pub static ELF_MAGIC: [u8; 4] = [0x7f, 0x45, 0x4c, 0x46];

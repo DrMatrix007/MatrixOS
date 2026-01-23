@@ -20,9 +20,11 @@ fn make_frame_buffer() -> Result<MatrixFrameBuffer> {
     let pixel_count = gop_frame_buffer.size() / core::mem::size_of::<MatrixPixel>();
 
     let slice = unsafe { slice::from_raw_parts_mut(pixel_ptr, pixel_count) };
-    let slice: &'static [MatrixPixel] = unsafe { core::mem::transmute(slice) };
+    let slice: &'static mut [MatrixPixel] = unsafe { core::mem::transmute(slice) };
 
     let (width, height) = gop.current_mode_info().resolution();
+
+    unsafe {core::mem::forget(gop);}
 
     Ok(MatrixFrameBuffer::new(slice, width as u64, height as u64))
 }

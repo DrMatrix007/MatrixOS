@@ -9,7 +9,8 @@ pub mod kernel_loader;
 pub mod protocols;
 
 use anyhow::Context;
-use matrix_boot_args::MatrixBootInfo;
+use log::info;
+use matrix_boot_args::{MatrixEntryPoint, MatrixPixel};
 use uefi::{Status, entry};
 
 use crate::{args::make_args, kernel_loader::load_kernel};
@@ -24,12 +25,14 @@ fn hlt() -> ! {
 fn main() -> Status {
     uefi::helpers::init().unwrap();
 
-    let _entry = load_kernel().context("failed to load kernel").unwrap();
+    let entry = load_kernel().context("failed to load kernel").unwrap();
+    
+    let mut boot_info = make_args().context("get bootinfo").unwrap();
 
-    let boot_info = make_args();
-    let Ok(_boot_info) = boot_info else {
-        return Status::ABORTED;
-    };
 
-    hlt();
+    entry(&mut boot_info);
+
+    drop(boot_info);
+
+    Status::SUCCESS
 }

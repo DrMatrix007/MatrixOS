@@ -1,6 +1,6 @@
 use anyhow::{Context, Result};
 use log::info;
-use matrix_boot_args::MatrixEntryPoint;
+use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
 use uefi::{CStr16, cstr16};
 
 use crate::elf_loader::{loader::load_elf, read_file::read_file};

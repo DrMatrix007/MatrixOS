@@ -3,6 +3,7 @@ use std::path::Path;
 
 use crate::{
     builder::{BuildConfiguration, BuildOptions, build_project},
+    clippy::run_clippy,
     project::Project,
 };
 
@@ -32,5 +33,9 @@ impl Project for KernelProject {
         );
 
         Ok(())
+    }
+
+    fn clippy(&self) -> Result<()> {
+        run_clippy(KERNEL_PACKAGE_NAME, KERNEL_TARGET)
     }
 }

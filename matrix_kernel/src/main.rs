@@ -5,8 +5,11 @@ pub mod entry_point;
 
 use core::panic::PanicInfo;
 
+static mut VALUE: u64 = 0;
+
 pub fn kernel_entry() -> u64 {
-    0x1b
+    // unsafe { VALUE += 2 };
+    unsafe { VALUE }
 }
 
 #[panic_handler]

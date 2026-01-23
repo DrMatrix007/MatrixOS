@@ -1,4 +1,5 @@
-use alloc::{format, vec::Vec};
+use alloc::{format, vec::{Vec}};
+use alloc::vec;
 use anyhow::{Context, Result, anyhow};
 use log::info;
 use uefi::{
@@ -33,8 +34,7 @@ pub fn read_file(path: &CStr16) -> Result<Vec<u8>> {
 
     info!("got file with size {}", file_size);
 
-    let mut res = Vec::new();
-    res.resize(file_size as usize, 0);
+    let mut res = vec![0; file_size as usize];
 
     let bytes_read = file
         .read(&mut res)

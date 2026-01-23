@@ -1,4 +1,4 @@
-use bitflags::{bitflags};
+use bitflags::bitflags;
 use bytemuck::{Pod, Zeroable};
 
 use crate::{
@@ -6,6 +6,7 @@ use crate::{
     loader::elf::{FileAddress, RvaAddress, enum_values::ValueMismatch},
 };
 
+#[derive(Debug)]
 pub enum ElfProgramHeaderType {
     Load,
 }
@@ -15,7 +16,8 @@ impl_try_from_enum_values!(u32, ElfProgramHeaderType {
 });
 
 bitflags! {
-    struct ElfProgramHeaderFlags: u32 {
+    #[derive(Debug)]
+    pub struct ElfProgramHeaderFlags: u32 {
         const Executable = 1;
         const Writable = 2;
         const Readable = 4;
@@ -46,6 +48,14 @@ pub struct ElfProgramHeaderRaw {
     pub p_align: u64,
 }
 
-impl ElfProgramHeaderRaw {}
+impl ElfProgramHeaderRaw {
+    pub fn get_type(&self) -> Result<ElfProgramHeaderType, ValueMismatch> {
+        ElfProgramHeaderType::try_from(self.p_type)
+    }
+
+    pub fn get_flags(&self) -> Result<ElfProgramHeaderFlags, ValueMismatch> {
+        ElfProgramHeaderFlags::try_from(self.p_flags)
+    }
+}
 
 const _: () = assert!(size_of::<ElfProgramHeaderRaw>() == 56);

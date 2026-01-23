@@ -1,23 +1,20 @@
-use core::ptr::copy;
-
+use alloc::slice;
 use anyhow::{Context, Result, anyhow};
 use bytemuck::{Pod, Zeroable};
 use log::info;
+
 use matrix_boot_args::MatrixEntryPoint;
-use uefi::{
-    boot::{MemoryType, PAGE_SIZE},
-    println,
-};
+use uefi::boot::{MemoryType, PAGE_SIZE};
 
 use crate::loader::elf::{
     header_raw::{ELF_MAGIC, ElfHeaderRaw},
-    program_header_raw::ElfProgramHeaderRaw,
+    program_header_raw::{ElfProgramHeaderRaw, ElfProgramHeaderType},
     section_header_raw::ElfSectionHeaderRaw,
 };
 
 fn parse_object<T: Pod + Zeroable>(file: &[u8], start: u64) -> Result<&T> {
     parse_objects(file, start, 1)?
-        .get(0)
+        .first()
         .ok_or_else(|| anyhow!("object missing"))
 }
 
@@ -60,7 +57,15 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
         section_headers.len()
     );
 
-    let page_mask = PAGE_SIZE as u64 - 1;
+    let total_size = calc_size(program_headers)?;
+
+    let entry = allocate_elf(file, header, program_headers, total_size)?;
+
+    Ok(entry)
+}
+
+fn calc_size(program_headers: &[ElfProgramHeaderRaw]) -> Result<u64, anyhow::Error> {
+    static PAGE_MASK: u64 = PAGE_SIZE as u64 - 1;
 
     let min_vaddr: u64 = program_headers
         .iter()
@@ -70,44 +75,52 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
 
     let max_vaddr: u64 = program_headers
         .iter()
-        .map(|header| header.p_vaddr)
+        .map(|header| header.p_vaddr + header.p_memsz)
         .max()
         .context("finding max vaddr")?;
 
-    let aligned_min = min_vaddr & !page_mask;
-    let total_size = (max_vaddr - aligned_min + page_mask) & !page_mask;
+    let aligned_min = min_vaddr & !PAGE_MASK;
+    let total_size = (max_vaddr - aligned_min + PAGE_MASK) & !PAGE_MASK;
 
-    println!("position: 0x{:x} size: 0x{:x}", aligned_min, total_size);
+    Ok(total_size)
+}
 
-    let image_base = uefi::boot::allocate_pages(
+fn allocate_elf(
+    file: &[u8],
+    header: &ElfHeaderRaw,
+    program_headers: &[ElfProgramHeaderRaw],
+    total_size: u64,
+) -> Result<MatrixEntryPoint, anyhow::Error> {
+    let image_base_raw = uefi::boot::allocate_pages(
         uefi::boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
         total_size as usize / PAGE_SIZE,
     )
     .context("allocating pages")?
     .as_ptr();
+    let image = unsafe { slice::from_raw_parts_mut(image_base_raw, total_size as usize) };
+    image.fill(0);
+    for header in program_headers.iter().filter(|header| {
+        matches!(header.get_type(), Ok(ElfProgramHeaderType::Load)) && header.get_flags().is_ok()
+    }) {
+        let (vaddr, vsize) = (header.p_vaddr, header.p_memsz);
 
-    for header in program_headers {
-        let (vaddr, vsize) = (
-            unsafe { image_base.add(header.p_vaddr as usize) },
-            header.p_memsz,
-        );
+        let (faddr, fsize) = (header.p_offset, header.p_filesz);
 
-        let (faddr, fsize) = (header.p_offset, header.p_memsz);
+        let size_to_copy = Ord::min(fsize, vsize);
 
-        let data = file
-            .get((faddr as usize)..(faddr as usize + fsize as usize))
-            .context("getting the program header data from buffer")?;
-
-        let size_to_copy = Ord::min(vsize, fsize);
-
-        unsafe { copy(data.as_ptr(), vaddr, size_to_copy as usize) };
+        let file_segment = file
+            .get(faddr as usize..(faddr + size_to_copy) as usize)
+            .context("getting the program header file buffer range")?;
+        let image_segment = image
+            .get_mut(vaddr as usize..(vaddr + size_to_copy) as usize)
+            .context("getting the program header image buffer range")?;
+        image_segment.copy_from_slice(file_segment);
     }
-
-    let entry: MatrixEntryPoint =
-        unsafe { core::mem::transmute(image_base.add(header.e_entry as usize)) };
-
-    
-
+    let entry: MatrixEntryPoint = unsafe {
+        core::mem::transmute(
+            (parse_object::<u64>(image, header.e_entry)).context("cant get entry")?,
+        )
+    };
     Ok(entry)
 }

@@ -3,6 +3,7 @@ use std::path::Path;
 
 use crate::{
     builder::{BuildConfiguration, BuildOptions, build_project},
+    clippy::run_clippy,
     project::Project,
 };
 
@@ -35,5 +36,9 @@ impl Project for BootloaderProject {
         );
 
         Ok(())
+    }
+
+    fn clippy(&self) -> Result<()> {
+        run_clippy(BOOTLOADER_PACKAGE_NAME, BOOTLAODER_TARGET)
     }
 }

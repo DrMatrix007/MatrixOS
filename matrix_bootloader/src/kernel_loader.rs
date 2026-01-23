@@ -1,4 +1,5 @@
 use anyhow::{Context, Result};
+use log::info;
 use matrix_boot_args::MatrixEntryPoint;
 use uefi::{CStr16, cstr16};
 
@@ -10,6 +11,10 @@ pub fn load_kernel() -> Result<MatrixEntryPoint> {
     let kernel = read_file(PATH_TO_KERNEL).context("reading kernel from disk")?;
 
     let entry = load_elf(&kernel).context("parsing the kernel")?;
+
+    let res = entry();
+
+    info!("got value = {res}");
 
     Ok(entry)
 }

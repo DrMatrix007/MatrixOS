@@ -7,5 +7,5 @@ pub fn get_procotol<T: uefi::proto::Protocol>() -> Result<ScopedProtocol<T>> {
     let protocol =
         uefi::boot::open_protocol_exclusive::<T>(handle).context("cant open simple fs protocol")?;
 
-    return Ok(protocol);
+    Ok(protocol)
 }

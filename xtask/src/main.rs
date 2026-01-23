@@ -3,6 +3,7 @@ mod builder;
 mod kernel;
 pub mod project;
 mod runner;
+pub mod clippy;
 
 use std::{
     path::PathBuf,
@@ -60,8 +61,17 @@ fn main() -> Result<()> {
         Commands::Run => {
             run_workspace(workspace, build_configuration)?;
         }
-        Commands::Clippy => {}
+        Commands::Clippy => {
+            clippy_workspace(workspace);
+        }
     }
+    Ok(())
+}
+
+fn clippy_workspace(workspace: Workspace) -> Result<()> {
+    workspace.bootloader.clippy()?;
+    workspace.kernel.clippy()?;
+
     Ok(())
 }
 
@@ -71,7 +81,7 @@ fn run_workspace(
 ) -> Result<(), anyhow::Error> {
     let workspace_root = get_workspace_root();
     let mut esp = get_target_dir().context("getting target dir for image")?;
-    esp.push("esp/");
+    esp.push(format!("{}/esp/", build_configuration));
     let (bootloader, kernel) =
         build_projects(&workspace, build_configuration).context("building projects for image")?;
     workspace

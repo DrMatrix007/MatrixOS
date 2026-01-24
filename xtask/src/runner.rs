@@ -13,6 +13,7 @@ pub fn run_qemu(ovmf_root: &Path, esp_path: &Path) -> Result<()> {
         .arg(format!("format=raw,file=fat:rw:{}", esp_path.display()))
         .arg("-net")
         .arg("none")
+        .args(["-serial", "stdio"])
         .status()
         .context("QEMU failed to start")?;
 

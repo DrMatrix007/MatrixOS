@@ -10,8 +10,6 @@ use uefi::{
 use crate::protocols::get_procotol;
 
 pub fn make_args() -> Result<*mut MatrixBootInfo> {
-    let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
-
     let pages: *mut MatrixBootInfo = boot::allocate_pages(
         boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
@@ -20,8 +18,14 @@ pub fn make_args() -> Result<*mut MatrixBootInfo> {
     .context("allocating for the data")?
     .cast()
     .as_ptr();
+    let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
 
-    unsafe { pages.write(MatrixBootInfo { data: 0x1b, frame_buffer }) };
+    unsafe {
+        pages.write(MatrixBootInfo {
+            data: 0x1b,
+            frame_buffer,
+        })
+    };
 
     Ok(pages)
 }

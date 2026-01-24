@@ -15,7 +15,12 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> u64 {
                     .frame_buffer
                     .data
                     .add((x + y * 100) as usize)
-                    .write_volatile(MatrixPixel::new(69, 69, 69))
+                    .write_volatile(MatrixPixel {
+                        r: 69,
+                        g: 69,
+                        b: 69,
+                        a: !0,
+                    })
             };
         }
     }

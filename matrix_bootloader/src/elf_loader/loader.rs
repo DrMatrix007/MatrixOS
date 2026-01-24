@@ -61,6 +61,12 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
 
     let entry = allocate_elf(file, header, program_headers, total_size)?;
 
+
+    for section_header in section_headers {
+        info!("section {:?}", section_header.get_type());
+    }
+
+
     Ok(entry)
 }
 
@@ -99,7 +105,9 @@ fn allocate_elf(
     .context("allocating pages")?
     .as_ptr();
     let image = unsafe { slice::from_raw_parts_mut(image_base_raw, total_size as usize) };
+    
     image.fill(0);
+    
     for header in program_headers.iter().filter(|header| {
         matches!(header.get_type(), Ok(ElfProgramHeaderType::Load)) && header.get_flags().is_ok()
     }) {
@@ -122,5 +130,8 @@ fn allocate_elf(
             (parse_object::<u64>(image, header.e_entry)).context("cant get entry")?,
         )
     };
+
+    info!("parsed the elf successfuly into 0x{:x}", image_base_raw as usize);
+
     Ok(entry)
 }

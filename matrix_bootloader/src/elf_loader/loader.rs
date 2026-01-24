@@ -95,25 +95,26 @@ fn fix_reloactions(
     image: &mut [u8],
 ) -> Result<(), anyhow::Error> {
     let image_ptr_value = image.as_mut_ptr() as u64;
-    Ok(
-        for section_header in section_headers
-            .iter()
-            .filter(|section_header| matches!(section_header.get_type(), Ok(ElfSectionType::Rela)))
-            .filter(|section_header| section_header.sh_addr != 0)
-        {
-            let relocations = section_header.sh_size / core::mem::size_of::<Elf64Rela>() as u64;
 
-            let reloactions = read_objects::<Elf64Rela>(file, section_header.sh_addr, relocations)
-                .context("reading the reloactions from memory")?;
+    for section_header in section_headers
+        .iter()
+        .filter(|section_header| matches!(section_header.get_type(), Ok(ElfSectionType::Rela)))
+        .filter(|section_header| section_header.sh_addr != 0)
+    {
+        let relocations = section_header.sh_size / core::mem::size_of::<Elf64Rela>() as u64;
 
-            for relocation in reloactions {
-                let value = read_object_mut::<u64>(image, relocation.offset)
-                    .context("get relocations value")?;
+        let reloactions = read_objects::<Elf64Rela>(file, section_header.sh_addr, relocations)
+            .context("reading the reloactions from memory")?;
 
-                *value = image_ptr_value + relocation.addend;
-            }
-        },
-    )
+        for relocation in reloactions {
+            let value = read_object_mut::<u64>(image, relocation.offset)
+                .context("get relocations value")?;
+
+            *value = image_ptr_value + relocation.addend;
+        }
+    }
+
+    Ok(())
 }
 
 fn calc_size(program_headers: &[ElfProgramHeaderRaw]) -> Result<u64, anyhow::Error> {

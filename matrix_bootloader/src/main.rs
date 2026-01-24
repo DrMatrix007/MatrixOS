@@ -23,7 +23,9 @@ fn main() -> Status {
 
     let boot_info = make_args().context("get bootinfo").unwrap();
 
-    unsafe { boot::exit_boot_services(None) };
+    unsafe {
+        let _ = boot::exit_boot_services(None);
+    };
 
     entry(boot_info);
 

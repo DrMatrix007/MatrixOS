@@ -68,3 +68,12 @@ impl ElfSectionHeaderRaw {
         ElfSectionType::try_from(self.sh_type)
     }
 }
+
+
+#[repr(C)]
+#[derive(Debug, Pod, Zeroable, Clone, Copy)]
+pub struct Elf64Rela {
+    pub offset: RvaAddress,
+    pub info: u64,
+    pub addend: u64, 
+}

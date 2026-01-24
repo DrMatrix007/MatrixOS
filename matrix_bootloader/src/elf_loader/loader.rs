@@ -9,16 +9,36 @@ use uefi::boot::{MemoryType, PAGE_SIZE};
 use crate::elf_loader::elf::{
     header_raw::{ELF_MAGIC, ElfHeaderRaw},
     program_header_raw::{ElfProgramHeaderRaw, ElfProgramHeaderType},
-    section_header_raw::ElfSectionHeaderRaw,
+    section_header_raw::{Elf64Rela, ElfSectionHeaderRaw, ElfSectionType},
 };
 
-fn parse_object<T: Pod + Zeroable>(file: &[u8], start: u64) -> Result<&T> {
-    parse_objects(file, start, 1)?
+fn read_object_mut<T: Pod + Zeroable>(data: &mut [u8], start: u64) -> Result<&mut T> {
+    read_objects_mut(data, start, 1)?
+        .first_mut()
+        .ok_or_else(|| anyhow!("object missing"))
+}
+
+fn read_objects_mut<T: Pod + Zeroable>(
+    file: &mut [u8],
+    start: u64,
+    count: u64,
+) -> Result<&mut [T]> {
+    let start = start as usize;
+    let end = start + size_of::<T>() * count as usize;
+    let value_slice = file
+        .get_mut(start..end)
+        .ok_or_else(|| anyhow!("bad range"))?;
+
+    bytemuck::try_cast_slice_mut(value_slice).map_err(|e| anyhow!("bytemuck cast failed: {}", e))
+}
+
+fn read_object<T: Pod + Zeroable>(file: &[u8], start: u64) -> Result<&T> {
+    read_objects(file, start, 1)?
         .first()
         .ok_or_else(|| anyhow!("object missing"))
 }
 
-fn parse_objects<T: Pod + Zeroable>(file: &[u8], start: u64, count: u64) -> Result<&[T]> {
+fn read_objects<T: Pod + Zeroable>(file: &[u8], start: u64, count: u64) -> Result<&[T]> {
     let start = start as usize;
     let end = start + size_of::<T>() * count as usize;
     let value_slice = file.get(start..end).ok_or_else(|| anyhow!("bad range"))?;
@@ -27,7 +47,7 @@ fn parse_objects<T: Pod + Zeroable>(file: &[u8], start: u64, count: u64) -> Resu
 }
 
 pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
-    let header = parse_object::<ElfHeaderRaw>(file, 0).context("getting the elf header")?;
+    let header = read_object::<ElfHeaderRaw>(file, 0).context("getting the elf header")?;
 
     if ELF_MAGIC != header.magic {
         return Err(anyhow!("bad elf magic"));
@@ -44,11 +64,11 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
     info!("entry point: 0x{:x}", x);
 
     let program_headers =
-        parse_objects::<ElfProgramHeaderRaw>(file, header.e_phoff, header.e_phnum as u64)
+        read_objects::<ElfProgramHeaderRaw>(file, header.e_phoff, header.e_phnum as u64)
             .context("getting the program header")?;
 
     let section_headers =
-        parse_objects::<ElfSectionHeaderRaw>(file, header.e_shoff, header.e_shnum as u64)
+        read_objects::<ElfSectionHeaderRaw>(file, header.e_shoff, header.e_shnum as u64)
             .context("getting the section headers")?;
 
     info!(
@@ -59,15 +79,41 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
 
     let total_size = calc_size(program_headers)?;
 
-    let entry = allocate_elf(file, header, program_headers, total_size)?;
+    let image = allocate_elf(file, program_headers, total_size)?;
 
+    fix_reloactions(file, section_headers, image)?;
 
-    for section_header in section_headers {
-        info!("section {:?}", section_header.get_type());
-    }
-
-
+    let entry: MatrixEntryPoint = unsafe {
+        core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
+    };
     Ok(entry)
+}
+
+fn fix_reloactions(
+    file: &[u8],
+    section_headers: &[ElfSectionHeaderRaw],
+    image: &mut [u8],
+) -> Result<(), anyhow::Error> {
+    let image_ptr_value = image.as_mut_ptr() as u64;
+    Ok(
+        for section_header in section_headers
+            .iter()
+            .filter(|section_header| matches!(section_header.get_type(), Ok(ElfSectionType::Rela)))
+            .filter(|section_header| section_header.sh_addr != 0)
+        {
+            let relocations = section_header.sh_size / core::mem::size_of::<Elf64Rela>() as u64;
+
+            let reloactions = read_objects::<Elf64Rela>(file, section_header.sh_addr, relocations)
+                .context("reading the reloactions from memory")?;
+
+            for relocation in reloactions {
+                let value = read_object_mut::<u64>(image, relocation.offset)
+                    .context("get relocations value")?;
+
+                *value = image_ptr_value + relocation.addend;
+            }
+        },
+    )
 }
 
 fn calc_size(program_headers: &[ElfProgramHeaderRaw]) -> Result<u64, anyhow::Error> {
@@ -93,10 +139,9 @@ fn calc_size(program_headers: &[ElfProgramHeaderRaw]) -> Result<u64, anyhow::Err
 
 fn allocate_elf(
     file: &[u8],
-    header: &ElfHeaderRaw,
     program_headers: &[ElfProgramHeaderRaw],
     total_size: u64,
-) -> Result<MatrixEntryPoint, anyhow::Error> {
+) -> Result<&'static mut [u8], anyhow::Error> {
     let image_base_raw = uefi::boot::allocate_pages(
         uefi::boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
@@ -105,9 +150,9 @@ fn allocate_elf(
     .context("allocating pages")?
     .as_ptr();
     let image = unsafe { slice::from_raw_parts_mut(image_base_raw, total_size as usize) };
-    
+
     image.fill(0);
-    
+
     for header in program_headers.iter().filter(|header| {
         matches!(header.get_type(), Ok(ElfProgramHeaderType::Load)) && header.get_flags().is_ok()
     }) {
@@ -125,13 +170,11 @@ fn allocate_elf(
             .context("getting the program header image buffer range")?;
         image_segment.copy_from_slice(file_segment);
     }
-    let entry: MatrixEntryPoint = unsafe {
-        core::mem::transmute(
-            (parse_object::<u64>(image, header.e_entry)).context("cant get entry")?,
-        )
-    };
 
-    info!("parsed the elf successfuly into 0x{:x}", image_base_raw as usize);
+    info!(
+        "parsed the elf successfuly into 0x{:x}",
+        image_base_raw as usize
+    );
 
-    Ok(entry)
+    Ok(image)
 }

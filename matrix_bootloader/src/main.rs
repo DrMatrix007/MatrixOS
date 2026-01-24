@@ -9,17 +9,10 @@ pub mod kernel_loader;
 pub mod protocols;
 
 use anyhow::Context;
-use log::info;
-use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
-use uefi::{Status, boot, entry, print};
+use matrix_boot_args::MatrixBootInfo;
+use uefi::{Status, boot, entry};
 
 use crate::{args::make_args, kernel_loader::load_kernel};
-
-fn hlt() -> ! {
-    loop {
-        unsafe { core::arch::asm!("hlt") };
-    }
-}
 
 #[entry]
 fn main() -> Status {
@@ -30,23 +23,9 @@ fn main() -> Status {
 
     let boot_info = make_args().context("get bootinfo").unwrap();
 
-    // for x in 0..unsafe { boot_info.read() }.frame_buffer.width {
-    //     for y in 0..unsafe { boot_info.read() }.frame_buffer.height {
-    //         unsafe {
-    //             unsafe { boot_info.read() }
-    //                 .frame_buffer
-    //                 .data
-    //                 .add((x + y * unsafe { boot_info.read() }.frame_buffer.width) as usize)
-    //                 .write_volatile(MatrixPixel::new(69, 69, 69))
-    //         };
-    //     }
-    // }
+    unsafe { boot::exit_boot_services(None) };
 
-    let result = entry(boot_info);
-
-    info!("{}", unsafe { boot_info.read() }.data);
-
-    // hlt();
+    entry(boot_info);
 
     Status::SUCCESS
 }

@@ -1,4 +1,4 @@
-use core::{ptr::NonNull, slice};
+use core::slice;
 
 use anyhow::{Context, Result};
 use matrix_boot_args::{MatrixBootInfo, MatrixFrameBuffer, MatrixPixel};

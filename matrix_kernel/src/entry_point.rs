@@ -1,4 +1,4 @@
-use matrix_boot_args::MatrixBootInfo;
+use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
 
 use crate::kernel_entry;
 

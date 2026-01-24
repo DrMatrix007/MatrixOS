@@ -1,15 +1,29 @@
-use core::slice;
+use core::{ptr::NonNull, slice};
 
 use anyhow::{Context, Result};
 use matrix_boot_args::{MatrixBootInfo, MatrixFrameBuffer, MatrixPixel};
-use uefi::proto::console::gop::GraphicsOutput;
+use uefi::{
+    boot::{self, MemoryType},
+    proto::console::gop::GraphicsOutput,
+};
 
 use crate::protocols::get_procotol;
 
-pub fn make_args() -> Result<MatrixBootInfo> {
+pub fn make_args() -> Result<*mut MatrixBootInfo> {
     let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
 
-    Ok(MatrixBootInfo { frame_buffer })
+    let pages: *mut MatrixBootInfo = boot::allocate_pages(
+        boot::AllocateType::AnyPages,
+        MemoryType::BOOT_SERVICES_DATA,
+        core::mem::size_of::<MatrixBootInfo>(),
+    )
+    .context("allocating for the data")?
+    .cast()
+    .as_ptr();
+
+    unsafe { pages.write(MatrixBootInfo { data: 0x1b, frame_buffer }) };
+
+    Ok(pages)
 }
 
 fn make_frame_buffer() -> Result<MatrixFrameBuffer> {
@@ -23,8 +37,6 @@ fn make_frame_buffer() -> Result<MatrixFrameBuffer> {
     let slice: &'static mut [MatrixPixel] = unsafe { core::mem::transmute(slice) };
 
     let (width, height) = gop.current_mode_info().resolution();
-
-    unsafe {core::mem::forget(gop);}
 
     Ok(MatrixFrameBuffer::new(slice, width as u64, height as u64))
 }

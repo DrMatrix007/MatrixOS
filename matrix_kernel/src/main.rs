@@ -8,16 +8,19 @@ use core::panic::PanicInfo;
 use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
 
 pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> u64 {
-    let frame_buffer = &mut boot_info.frame_buffer;
-
-    for x in 0..frame_buffer.width() {
-        for y in 0..frame_buffer.height() {
-            frame_buffer.draw_pixel(&MatrixPixel::new(69, 69, 69), x, y);
+    for x in 0..boot_info.frame_buffer.width {
+        for y in 0..boot_info.frame_buffer.height {
+            unsafe {
+                boot_info
+                    .frame_buffer
+                    .data
+                    .add((x + y * 100) as usize)
+                    .write_volatile(MatrixPixel::new(69, 69, 69))
+            };
         }
     }
 
-
-    &mut *boot_info as *mut MatrixBootInfo as u64
+    0
 }
 
 #[panic_handler]

@@ -1,22 +1,16 @@
 #![no_std]
 #![no_main]
+#![feature(abi_x86_interrupt)]
 
+pub mod arch;
 pub mod entry_point;
 pub mod logger;
 pub mod panics;
 
-use core::panic::PanicInfo;
-
-use log::{error, info};
+use log::info;
 use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
 
-use crate::logger::init_basic_logger;
-
-fn hlt() -> ! {
-    loop {
-        unsafe { core::arch::asm!("hlt") };
-    }
-}
+use crate::{logger::init_basic_logger, panics::hlt};
 
 pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
     for x in 0..boot_info.frame_buffer.width() {
@@ -26,10 +20,11 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
                 .draw_pixel(&MatrixPixel::new(0, 0, 0), x, y);
         }
     }
-
     init_basic_logger();
 
     info!("starting matrix os...");
+
+    arch::x64::init_x64();
 
     hlt();
 }

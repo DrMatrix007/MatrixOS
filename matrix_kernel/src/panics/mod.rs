@@ -2,8 +2,12 @@ use core::panic::PanicInfo;
 
 use log::error;
 
-use crate::hlt;
 
+pub fn hlt() -> ! {
+    loop {
+        unsafe { core::arch::asm!("hlt") };
+    }
+}
 
 #[panic_handler]
 fn panic_handler(info: &PanicInfo) -> ! {

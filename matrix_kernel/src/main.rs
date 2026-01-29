@@ -2,10 +2,14 @@
 #![no_main]
 
 pub mod entry_point;
+pub mod logger;
 
 use core::panic::PanicInfo;
 
+use log::{error, info};
 use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
+
+use crate::logger::init_basic_logger;
 
 fn hlt() -> ! {
     loop {
@@ -13,28 +17,27 @@ fn hlt() -> ! {
     }
 }
 
-pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> u64 {
+pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
+
+    init_basic_logger();
+
+    info!("test????");
+
     for x in 0..boot_info.frame_buffer.width() {
         for y in 0..boot_info.frame_buffer.height() {
-            unsafe {
-                boot_info
-                    .frame_buffer
-                    .data
-                    .add((x + y * boot_info.frame_buffer.width()) as usize)
-                    .write_volatile(MatrixPixel {
-                        r: 0,
-                        g: 0,
-                        b: 0,
-                        a: !0,
-                    })
-            };
+            boot_info
+                .frame_buffer
+                .draw_pixel(&MatrixPixel::new(0, 0, 0), x, y);
         }
     }
 
-    hlt()
+    hlt();
 }
 
 #[panic_handler]
-fn panic_handler(_: &PanicInfo) -> ! {
-    loop {}
+fn panic_handler(info: &PanicInfo) -> ! {
+    error!("got panic!!! {}", info.message());
+    error!("panic location: {:?}", info.location());
+
+    loop{}
 }

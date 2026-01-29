@@ -1,6 +1,6 @@
 #![no_std]
 
-pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> u64;
+pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> !;
 
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default)]

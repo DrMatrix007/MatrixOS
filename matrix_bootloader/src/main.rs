@@ -18,7 +18,7 @@ use crate::{args::make_args, kernel_loader::load_kernel};
 fn main() -> Status {
     uefi::helpers::init().unwrap();
 
-    let entry: extern "sysv64" fn(*mut MatrixBootInfo) -> u64 =
+    let entry: extern "sysv64" fn(*mut MatrixBootInfo) -> ! =
         load_kernel().context("failed to load kernel").unwrap();
 
     let boot_info = make_args().context("get bootinfo").unwrap();
@@ -28,6 +28,4 @@ fn main() -> Status {
     };
 
     entry(boot_info);
-
-    Status::SUCCESS
 }

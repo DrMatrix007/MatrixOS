@@ -52,16 +52,6 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
     if ELF_MAGIC != header.magic {
         return Err(anyhow!("bad elf magic"));
     }
-    info!(
-        "got header: {:?} {:?} {:?} {:?} ",
-        header.get_class(),
-        header.get_osabi(),
-        header.get_data_encoding(),
-        header.get_type()
-    );
-
-    let x = header.e_entry;
-    info!("entry point: 0x{:x}", x);
 
     let program_headers =
         read_objects::<ElfProgramHeaderRaw>(file, header.e_phoff, header.e_phnum as u64)
@@ -70,12 +60,6 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
     let section_headers =
         read_objects::<ElfSectionHeaderRaw>(file, header.e_shoff, header.e_shnum as u64)
             .context("getting the section headers")?;
-
-    info!(
-        "got {} program headers and {} section headers",
-        program_headers.len(),
-        section_headers.len()
-    );
 
     let total_size = calc_size(program_headers)?;
 

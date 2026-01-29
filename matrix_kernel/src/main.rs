@@ -3,6 +3,7 @@
 
 pub mod entry_point;
 pub mod logger;
+pub mod panics;
 
 use core::panic::PanicInfo;
 
@@ -18,11 +19,6 @@ fn hlt() -> ! {
 }
 
 pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
-
-    init_basic_logger();
-
-    info!("test????");
-
     for x in 0..boot_info.frame_buffer.width() {
         for y in 0..boot_info.frame_buffer.height() {
             boot_info
@@ -31,13 +27,9 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
         }
     }
 
+    init_basic_logger();
+
+    info!("starting matrix os...");
+
     hlt();
-}
-
-#[panic_handler]
-fn panic_handler(info: &PanicInfo) -> ! {
-    error!("got panic!!! {}", info.message());
-    error!("panic location: {:?}", info.location());
-
-    loop{}
 }

@@ -1,9 +1,12 @@
 use lazy_static::lazy_static;
 use x86_64::{
-    VirtAddr, instructions::tables::load_tss, registers::segmentation::{CS, Segment}, structures::{
+    VirtAddr,
+    instructions::tables::load_tss,
+    registers::segmentation::{CS, Segment},
+    structures::{
         gdt::{Descriptor, GlobalDescriptorTable, SegmentSelector},
         tss::TaskStateSegment,
-    }
+    },
 };
 
 pub const DOUBLE_FAULT_IST_INDEX: u16 = 0;
@@ -21,8 +24,7 @@ lazy_static! {
             static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
             let stack_start = VirtAddr::from_ptr(&raw const STACK);
-            let stack_end = stack_start + STACK_SIZE as u64;
-            stack_end
+            stack_start + STACK_SIZE as u64
         };
         tss
     };
@@ -47,5 +49,4 @@ pub fn init() {
         CS::set_reg(GDT.1.code_selector);
         load_tss(GDT.1.tss_selector);
     }
-
 }

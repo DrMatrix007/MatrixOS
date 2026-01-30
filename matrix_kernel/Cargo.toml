@@ -7,4 +7,6 @@ edition = "2024"
 lazy_static = {version = "1.5.0", default-features = false, features = ["spin_no_std"]}
 log = { version = "0.4.29", default-features = false }
 matrix_boot_args = { path = "../matrix_boot_args" }
+pic8259 = "0.11.0"
+spin = "0.10.0"
 x86_64 = { version = "0.15.4" }

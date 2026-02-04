@@ -74,8 +74,6 @@ pub fn init_idt() {
 }
 
 extern "x86-interrupt" fn time_interrupt_handler(_: InterruptStackFrame) {
-    info!("time int!");
-
     unsafe {
         PICS.lock()
             .notify_end_of_interrupt(InterruptIndex::Timer as u8)

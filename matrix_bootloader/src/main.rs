@@ -10,8 +10,9 @@ pub mod kernel_stack;
 pub mod protocols;
 
 use anyhow::Context;
+use log::info;
 use matrix_boot_args::MatrixBootInfo;
-use uefi::{Status, boot, entry};
+use uefi::{Status, boot, entry, mem::memory_map::{MemoryMap, MemoryMapMut}, runtime};
 
 use crate::{args::make_args, kernel_loader::load_kernel, kernel_stack::KernelStack};
 
@@ -28,9 +29,13 @@ fn main() -> Status {
         .context("creating the kernel stack")
         .unwrap();
 
-    unsafe {
-        let _ = boot::exit_boot_services(None);
-    };
+    let mut map = unsafe { boot::exit_boot_services(None) };
+
+    map.sort();
+
+    for i in map.entries() {
+        info!("got mem dsc: {:?}", i);
+    }
 
     unsafe { stack.switch() };
 

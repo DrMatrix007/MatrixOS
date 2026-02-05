@@ -20,9 +20,11 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
                 .draw_pixel(&MatrixPixel::new(0, 0, 0), x, y);
         }
     }
+    
     init_basic_logger();
 
     info!("starting matrix os...");
+    info!("we are at 0x{:x}", boot_info.kernel_ptr);
 
     arch::x64::init_x64();
 

@@ -31,11 +31,10 @@ impl KernelStack {
     /// This function changes the RSP register
     #[inline(always)]
     pub unsafe fn switch(&self) {
-        let ptr = self.end_stack_ptr;
         unsafe {
             core::arch::asm! {
                 "mov rsp, {0}",
-                in(reg) ptr,
+                in(reg) self.end_stack_ptr,
                 options(nostack, preserves_flags)
             }
         }

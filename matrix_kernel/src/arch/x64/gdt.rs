@@ -51,7 +51,6 @@ pub fn init() {
     unsafe {
         CS::set_reg(GDT.1.code_selector);
         SS::set_reg(GDT.1.data_selector);
-
         load_tss(GDT.1.tss_selector);
     }
 }

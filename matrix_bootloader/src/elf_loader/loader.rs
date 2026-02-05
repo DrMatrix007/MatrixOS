@@ -12,6 +12,12 @@ use crate::elf_loader::elf::{
     section_header_raw::{Elf64Rela, ElfSectionHeaderRaw, ElfSectionType},
 };
 
+pub struct LoadedElf {
+    pub entry: MatrixEntryPoint,
+    pub image_base: u64,
+    pub image_size: u64,
+}
+
 fn read_object_mut<T: Pod + Zeroable>(data: &mut [u8], start: u64) -> Result<&mut T> {
     read_objects_mut(data, start, 1)?
         .first_mut()
@@ -46,7 +52,7 @@ fn read_objects<T: Pod + Zeroable>(file: &[u8], start: u64, count: u64) -> Resul
     bytemuck::try_cast_slice(value_slice).map_err(|e| anyhow!("bytemuck cast failed: {}", e))
 }
 
-pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
+pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
     let header = read_object::<ElfHeaderRaw>(file, 0).context("getting the elf header")?;
 
     if ELF_MAGIC != header.magic {
@@ -65,18 +71,27 @@ pub fn load_elf(file: &[u8]) -> Result<MatrixEntryPoint> {
 
     let image = allocate_elf(file, program_headers, total_size)?;
 
-    fix_reloactions(file, section_headers, image)?;
+    fix_reloactions(file, section_headers, image, image.as_ptr() as u64)?;
 
     let entry: MatrixEntryPoint = unsafe {
         core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
     };
-    Ok(entry)
+
+    info!("kernel entry point: {:#x}", entry as u64);
+
+
+    Ok(LoadedElf {
+        entry,
+        image_base: image.as_ptr() as u64,
+        image_size: image.len() as u64,
+    })
 }
 
 fn fix_reloactions(
     file: &[u8],
     section_headers: &[ElfSectionHeaderRaw],
     image: &mut [u8],
+    relocation_target: u64
 ) -> Result<(), anyhow::Error> {
     let image_ptr_value = image.as_mut_ptr() as u64;
 

@@ -239,6 +239,7 @@ dependencies = [
  "log",
  "matrix_boot_args",
  "uefi",
+ "x86_64",
 ]
 
 [[package]]

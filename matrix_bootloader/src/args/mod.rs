@@ -20,9 +20,7 @@ pub fn make_args(kernel_base: u64) -> Result<*mut MatrixBootInfo> {
     .as_ptr();
     let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
 
-    unsafe {
-        pages.write(MatrixBootInfo::new(0x1b, frame_buffer, kernel_base));
-    };
+    unsafe { pages.write(MatrixBootInfo::new(0x1b, frame_buffer, kernel_base)) };
 
     Ok(pages)
 }

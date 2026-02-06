@@ -11,22 +11,32 @@ pub mod protocols;
 
 use anyhow::Context;
 use log::info;
-use matrix_boot_args::MatrixBootInfo;
 use uefi::{
-    Status, boot, entry,
-    mem::memory_map::{MemoryMap, MemoryMapMut},
+    Status,
+    boot::{self},
+    entry,
+    mem::memory_map::MemoryMapMut,
 };
 
 use crate::{args::make_args, kernel_loader::load_kernel, kernel_stack::KernelStack};
+
+static KERNEL_START: u64 = 0xFFFF_FFFF_8000_0000;
 
 #[entry]
 fn main() -> Status {
     uefi::helpers::init().unwrap();
 
-    let kernel = load_kernel().context("failed to load kernel").unwrap();
+    let kernel = load_kernel(KERNEL_START)
+        .context("failed to load kernel")
+        .unwrap();
+
+    info!("got kernel with size of 0x{:x}", kernel.image_size);
+
     let entry = kernel.entry;
 
-    let boot_info = make_args(kernel.image_base).context("get bootinfo").unwrap();
+    let boot_info = make_args(kernel.image_base)
+        .context("get bootinfo")
+        .unwrap();
 
     let stack = KernelStack::new()
         .context("creating the kernel stack")

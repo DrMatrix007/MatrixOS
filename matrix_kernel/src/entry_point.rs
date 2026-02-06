@@ -1,4 +1,4 @@
-use matrix_boot_args::MatrixBootInfo;
+use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
 
 use crate::kernel_entry;
 
@@ -6,3 +6,5 @@ use crate::kernel_entry;
 extern "sysv64" fn _start(boot_info: *mut MatrixBootInfo) -> ! {
     kernel_entry(unsafe { &mut *boot_info })
 }
+
+const _: MatrixEntryPoint = _start;

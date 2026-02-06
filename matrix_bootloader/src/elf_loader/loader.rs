@@ -71,14 +71,13 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
 
     let image = allocate_elf(file, program_headers, total_size)?;
 
-    fix_reloactions(file, section_headers, image, image.as_ptr() as u64)?;
+    fix_reloactions(file, section_headers, image, image.as_ptr() as u64 /*relocation_target*/)?;
 
     let entry: MatrixEntryPoint = unsafe {
         core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
     };
 
     info!("kernel entry point: {:#x}", entry as u64);
-
 
     Ok(LoadedElf {
         entry,
@@ -91,10 +90,8 @@ fn fix_reloactions(
     file: &[u8],
     section_headers: &[ElfSectionHeaderRaw],
     image: &mut [u8],
-    relocation_target: u64
+    relocation_target: u64,
 ) -> Result<(), anyhow::Error> {
-    let image_ptr_value = image.as_mut_ptr() as u64;
-
     for section_header in section_headers
         .iter()
         .filter(|section_header| matches!(section_header.get_type(), Ok(ElfSectionType::Rela)))
@@ -109,7 +106,7 @@ fn fix_reloactions(
             let value = read_object_mut::<u64>(image, relocation.offset)
                 .context("get relocations value")?;
 
-            *value = image_ptr_value + relocation.addend;
+            *value = relocation_target + relocation.addend;
         }
     }
 

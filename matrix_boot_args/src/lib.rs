@@ -27,6 +27,7 @@ impl MatrixPixel {
 }
 
 #[repr(C)]
+#[derive(Clone)]
 pub struct MatrixFrameBuffer {
     pub data: *mut MatrixPixel,
     pub width: u64,
@@ -64,6 +65,7 @@ impl MatrixFrameBuffer {
     }
 }
 
+#[derive(Clone)]
 #[repr(C)]
 pub struct MatrixBootInfo {
     pub data: u64,

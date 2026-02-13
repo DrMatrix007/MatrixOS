@@ -1,3 +1,5 @@
+use core::ops::Add;
+
 use alloc::slice;
 use anyhow::{Context, Result, anyhow};
 use bytemuck::{Pod, Zeroable};
@@ -71,11 +73,14 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
 
     let image = allocate_elf(file, program_headers, total_size)?;
 
-    fix_reloactions(file, section_headers, image, image.as_ptr() as u64 /*relocation_target*/)?;
+    fix_reloactions(file, section_headers, image, relocation_target)?;
 
-    let entry: MatrixEntryPoint = unsafe {
-        core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
-    };
+    // let entry: MatrixEntryPoint = unsafe {
+    //     core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
+    // };
+
+    let entry: MatrixEntryPoint =
+        unsafe { core::mem::transmute(relocation_target.add(header.e_entry)) };
 
     info!("kernel entry point: {:#x}", entry as u64);
 

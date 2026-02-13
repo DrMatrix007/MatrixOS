@@ -3,7 +3,7 @@ mod builder;
 pub mod clippy;
 mod kernel;
 pub mod project;
-mod runner;
+mod qemu;
 
 use std::{
     path::PathBuf,
@@ -16,7 +16,7 @@ use clap::{Parser, Subcommand};
 
 use crate::{
     bootloader::BootloaderProject, builder::BuildConfiguration, kernel::KernelProject,
-    project::Project, runner::run_qemu,
+    project::Project, qemu::run_qemu,
 };
 
 #[derive(Parser)]

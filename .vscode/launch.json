@@ -1,0 +1,15 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "type": "lldb-dap",
+            "request": "attach", // Use "attach" to avoid Exec format error
+            "name": "Debug Bootloader (QEMU)",
+            "preLaunchTask": "cargo xtask run",
+            "program": "${workspaceFolder}/target/x86_64-unknown-uefi/debug/matrix_bootloader.efi",
+            "attachCommands": [
+                "gdb-remote localhost:1234"
+            ]
+        }
+    ]
+}

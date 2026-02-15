@@ -4,7 +4,7 @@ use anyhow::Context;
 use log::info;
 use uefi::{
     boot::{self, MemoryType, PAGE_SIZE, memory_map},
-    mem::memory_map::{MemoryMap, MemoryMapMut},
+    mem::memory_map::{MemoryMap, MemoryMapMut, MemoryMapOwned},
 };
 use x86_64::{
     PhysAddr, VirtAddr,
@@ -14,7 +14,7 @@ use x86_64::{
     },
 };
 
-use crate::{elf_loader::loader::LoadedElf};
+use crate::elf_loader::loader::LoadedElf;
 
 static UEFI_PHYS_OFFSET: u64 = 0;
 
@@ -77,13 +77,16 @@ pub fn create_kernel_page_table(
 
     memory_map.sort();
 
-    let last_entry = memory_map.entries().last().unwrap();
-    let phys_end = last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64;
+    let phys_end = get_max_phys(memory_map);
 
     info!("size of memory: {}", phys_end);
-    
-    map_physical_memory_offset::<Size1GiB>(&mut kernel_page_table.page_table, phys_end, physical_offset);
-    
+
+    map_physical_memory_offset::<Size1GiB>(
+        &mut kernel_page_table.page_table,
+        phys_end,
+        physical_offset,
+    );
+
     info!("mapped higher phsycial");
     map_physical_memory_offset::<Size1GiB>(&mut kernel_page_table.page_table, phys_end, 0);
     info!("mapped identity");
@@ -91,6 +94,12 @@ pub fn create_kernel_page_table(
     info!("physical memory mapped");
 
     kernel_page_table
+}
+
+fn get_max_phys(memory_map: MemoryMapOwned) -> u64 {
+    let last_entry = memory_map.entries().last().unwrap();
+    let phys_end = last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64;
+    phys_end
 }
 
 fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(

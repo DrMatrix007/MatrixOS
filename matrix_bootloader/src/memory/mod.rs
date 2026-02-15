@@ -14,7 +14,7 @@ use x86_64::{
     },
 };
 
-use crate::{elf_loader::loader::LoadedElf, kernel_stack::KernelStack};
+use crate::{elf_loader::loader::LoadedElf};
 
 static UEFI_PHYS_OFFSET: u64 = 0;
 
@@ -57,7 +57,6 @@ pub fn create_kernel_page_table(
     physical_offset: u64,
     loaded_kernel: &LoadedElf,
     new_kernel_base: u64,
-    stack: &KernelStack,
 ) -> KernelPageTable<'static> {
     let mut kernel_page_table = create_page_table();
 
@@ -82,10 +81,12 @@ pub fn create_kernel_page_table(
     let phys_end = last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64;
 
     info!("size of memory: {}", phys_end);
-
-    map_physical_memory_offset(&mut kernel_page_table.page_table, phys_end, physical_offset);
-
-    map_physical_memory_offset(&mut kernel_page_table.page_table, phys_end, 0);
+    
+    map_physical_memory_offset::<Size1GiB>(&mut kernel_page_table.page_table, phys_end, physical_offset);
+    
+    info!("mapped higher phsycial");
+    map_physical_memory_offset::<Size1GiB>(&mut kernel_page_table.page_table, phys_end, 0);
+    info!("mapped identity");
 
     info!("physical memory mapped");
 
@@ -132,8 +133,8 @@ fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(
     }
 }
 
-fn map_physical_memory_offset<M: Mapper<MappingPageSize>>(
-    mapper: &mut M,
+fn map_physical_memory_offset<Size: PageSize + Debug>(
+    mapper: &mut impl Mapper<Size>,
     phys_end: u64,
     phys_offset: u64,
 ) {
@@ -154,7 +155,7 @@ fn map_physical_memory_offset<M: Mapper<MappingPageSize>>(
                 .flush();
         }
 
-        addr += MappingPageSize::SIZE;
+        addr += Size::SIZE;
     }
 }
 

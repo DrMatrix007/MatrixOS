@@ -9,20 +9,20 @@ use uefi::{
 
 use crate::protocols::get_procotol;
 
-pub fn make_args(kernel_base: u64) -> Result<*mut MatrixBootInfo> {
-    let pages: *mut MatrixBootInfo = boot::allocate_pages(
+pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
+    let boot_info: *mut MatrixBootInfo = boot::allocate_pages(
         boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
-        core::mem::size_of::<MatrixBootInfo>(),
+        (core::mem::size_of::<MatrixBootInfo>() + 0xfff) / 0x1000,
     )
     .context("allocating for the data")?
     .cast()
     .as_ptr();
     let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
 
-    unsafe { pages.write(MatrixBootInfo::new(0x1b, frame_buffer, kernel_base)) };
+    unsafe { boot_info.write(MatrixBootInfo::new(0x1b, frame_buffer, phys_offset)) };
 
-    Ok(pages)
+    Ok((boot_info as u64 + phys_offset) as *mut MatrixBootInfo)
 }
 
 fn make_frame_buffer() -> Result<MatrixFrameBuffer> {

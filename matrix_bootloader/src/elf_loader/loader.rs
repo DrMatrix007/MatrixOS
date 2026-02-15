@@ -75,10 +75,6 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
 
     fix_reloactions(file, section_headers, image, relocation_target)?;
 
-    // let entry: MatrixEntryPoint = unsafe {
-    //     core::mem::transmute((read_object::<u64>(image, header.e_entry)).context("cant get entry")?)
-    // };
-
     let entry: MatrixEntryPoint =
         unsafe { core::mem::transmute(relocation_target.add(header.e_entry)) };
 

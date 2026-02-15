@@ -19,10 +19,7 @@ use uefi::{
     mem::memory_map::MemoryMapMut,
 };
 
-use crate::{
-    args::make_args, kernel_loader::load_kernel, kernel_stack::KernelStack,
-    memory::create_kernel_page_table,
-};
+use crate::{args::make_args, kernel_loader::load_kernel, memory::create_kernel_page_table};
 
 static KERNEL_START: u64 = 0xFFFF_FFFF_8000_0000;
 static PHYS_OFFSET_START: u64 = 0xFFFF_8000_0000_0000;
@@ -35,20 +32,17 @@ fn main() -> Status {
         .context("failed to load kernel")
         .unwrap();
 
+    info!("relocating in 0x{:x}", kernel.image_base);
+
     info!("got kernel with size of 0x{:x}", kernel.image_size);
 
     let entry = kernel.entry;
 
-    let boot_info = make_args(kernel.image_base)
+    let boot_info = make_args(PHYS_OFFSET_START)
         .context("get bootinfo")
         .unwrap();
 
-    let stack = KernelStack::new()
-        .context("creating the kernel stack")
-        .unwrap();
-    info!("got kernel stack object");
-
-    let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START, &stack);
+    let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START);
     info!("got memory");
 
     let mut map = unsafe { boot::exit_boot_services(None) };
@@ -56,8 +50,6 @@ fn main() -> Status {
     map.sort();
 
     unsafe { page_table.apply() };
-
-    // unsafe { stack.switch() };
 
     entry(boot_info);
 }

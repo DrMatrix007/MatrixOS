@@ -12,6 +12,14 @@ use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
 
 use crate::{logger::init_basic_logger, panics::hlt};
 
+fn get_rip() -> u64 {
+    let rip: u64;
+    unsafe {
+        core::arch::asm!("lea rax, [rip]", "mov {}, rax", out(reg) rip);
+    }
+    rip
+}
+
 pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
     for x in 0..boot_info.frame_buffer.width() {
         for y in 0..boot_info.frame_buffer.height() {
@@ -24,7 +32,7 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
     init_basic_logger();
 
     info!("starting matrix os...");
-    info!("we are at 0x{:x}", boot_info.kernel_ptr);
+    info!("we are runinng at 0x{:x}!", get_rip());
 
     arch::x64::init_x64();
 

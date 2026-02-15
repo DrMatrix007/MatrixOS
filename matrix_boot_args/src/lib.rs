@@ -1,7 +1,5 @@
 #![no_std]
 
-use x86_64::VirtAddr;
-
 pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> !;
 
 #[repr(C)]
@@ -70,12 +68,16 @@ impl MatrixFrameBuffer {
 pub struct MatrixBootInfo {
     pub data: u64,
     pub frame_buffer: MatrixFrameBuffer,
-    pub kernel_ptr: VirtAddr,
+    pub phys_offset: u64,
 }
 
 impl MatrixBootInfo {
-    pub fn new(data: u64, frame_buffer: MatrixFrameBuffer, kernel_ptr: u64) -> Self {
-        Self { data, frame_buffer, kernel_ptr: VirtAddr::new(kernel_ptr) }
+    pub fn new(data: u64, frame_buffer: MatrixFrameBuffer, phys_offset: u64) -> Self {
+        Self {
+            data,
+            frame_buffer,
+            phys_offset,
+        }
     }
 }
 

@@ -6,6 +6,7 @@ pub const KERNEL_STACK_SIZE: usize = PAGE_SIZE * 20;
 
 pub struct KernelStack {
     pub end_stack_ptr: *mut u8,
+    pub size: u64,
 }
 
 impl KernelStack {
@@ -23,11 +24,14 @@ impl KernelStack {
 
         info!("allocated kernel stack at 0x{:x}", ptr as u64);
 
-        Ok(Self { end_stack_ptr: ptr })
+        Ok(Self {
+            end_stack_ptr: ptr,
+            size: KERNEL_STACK_SIZE as _,
+        })
     }
 
     /// # Safety
-    /// 
+    ///
     /// This function changes the RSP register
     #[inline(always)]
     pub unsafe fn switch(&self) {

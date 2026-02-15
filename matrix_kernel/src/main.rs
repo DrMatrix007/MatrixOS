@@ -36,5 +36,7 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
 
     arch::x64::init_x64();
 
+    info!("did not crash!!!");
+    
     hlt();
 }

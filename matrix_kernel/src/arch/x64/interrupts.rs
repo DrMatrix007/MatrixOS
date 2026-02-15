@@ -1,5 +1,5 @@
 use lazy_static::lazy_static;
-use log::{error, info};
+use log::{debug, error, info};
 use pic8259::ChainedPics;
 use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
 

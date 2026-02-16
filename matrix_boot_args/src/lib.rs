@@ -23,4 +23,4 @@ impl MatrixBootInfo {
     }
 }
 
-// const _: () = assert!(core::mem::size_of::<MatrixBootInfo>() == 24);
+const _: () = assert!(core::mem::size_of::<MatrixBootInfo>() == 40);

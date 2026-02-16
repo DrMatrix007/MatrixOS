@@ -1,5 +1,9 @@
 use x86_64::{VirtAddr, registers::control::Cr3, structures::paging::PageTable};
 
+/// # Safety
+///
+/// the phys_offset should be the physical offset that the physical frames are mapped to
+///
 pub unsafe fn get_page_table(phys_offset: VirtAddr) -> &'static mut PageTable {
     let (physical_frame, _flags) = Cr3::read();
 

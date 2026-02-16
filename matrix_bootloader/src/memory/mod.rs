@@ -26,6 +26,12 @@ pub struct KernelPageTable<'a> {
 }
 
 impl<'a> KernelPageTable<'a> {
+    
+    /// # Safety
+    ///
+    /// changes the current page table
+    /// if the current code is not mapped, the cpu tries to execute unmapped pages
+    /// 
     pub unsafe fn apply(&self) {
         unsafe {
             use x86_64::registers::control::{Cr3, Cr3Flags};
@@ -38,18 +44,13 @@ struct UefiPageAllocator;
 
 unsafe impl<Size: PageSize> FrameAllocator<Size> for UefiPageAllocator {
     fn allocate_frame(&mut self) -> Option<x86_64::structures::paging::PhysFrame<Size>> {
-        match boot::allocate_pages(
+        boot::allocate_pages(
             boot::AllocateType::AnyPages,
             boot::MemoryType::LOADER_DATA,
             Size::SIZE as usize / PAGE_SIZE,
         )
         .ok()
-        {
-            Some(ptr) => Some(PhysFrame::containing_address(PhysAddr::new(
-                ptr.as_ptr() as u64
-            ))),
-            None => None,
-        }
+        .map(|ptr| PhysFrame::containing_address(PhysAddr::new(ptr.as_ptr() as u64)))
     }
 }
 
@@ -98,8 +99,7 @@ pub fn create_kernel_page_table(
 
 fn get_max_phys(memory_map: MemoryMapOwned) -> u64 {
     let last_entry = memory_map.entries().last().unwrap();
-    let phys_end = last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64;
-    phys_end
+    last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64
 }
 
 fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(

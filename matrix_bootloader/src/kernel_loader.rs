@@ -14,5 +14,5 @@ pub fn load_kernel(relocation_target: u64) -> Result<LoadedElf> {
 
     info!("read the elf successfuly");
 
-    Ok(load_elf(&kernel, relocation_target).context("parsing the kernel")?)
+    load_elf(&kernel, relocation_target).context("parsing the kernel")
 }

@@ -1,7 +1,10 @@
 use core::slice;
 
 use anyhow::{Context, Result};
-use matrix_boot_args::{MatrixBootInfo, frame_buffer::{MatrixFrameBuffer, MatrixPixel}};
+use matrix_boot_args::{
+    MatrixBootInfo,
+    frame_buffer::{MatrixFrameBuffer, MatrixPixel},
+};
 use uefi::{
     boot::{self, MemoryType},
     proto::console::gop::GraphicsOutput,
@@ -13,7 +16,7 @@ pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
     let boot_info: *mut MatrixBootInfo = boot::allocate_pages(
         boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
-        (core::mem::size_of::<MatrixBootInfo>() + 0xfff) / 0x1000,
+        core::mem::size_of::<MatrixBootInfo>().div_ceil(0x1000),
     )
     .context("allocating for the data")?
     .cast()

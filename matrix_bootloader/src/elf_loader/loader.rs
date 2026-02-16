@@ -78,7 +78,7 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
     let entry: MatrixEntryPoint =
         unsafe { core::mem::transmute(relocation_target.add(header.e_entry)) };
 
-    info!("kernel entry point: {:#x}", entry as u64);
+    info!("kernel entry point: {:#x}", entry as usize);
 
     Ok(LoadedElf {
         entry,

@@ -1,7 +1,7 @@
 use core::slice;
 
 use anyhow::{Context, Result};
-use matrix_boot_args::{MatrixBootInfo, MatrixFrameBuffer, MatrixPixel};
+use matrix_boot_args::{MatrixBootInfo, frame_buffer::{MatrixFrameBuffer, MatrixPixel}};
 use uefi::{
     boot::{self, MemoryType},
     proto::console::gop::GraphicsOutput,

@@ -5,10 +5,11 @@
 pub mod arch;
 pub mod entry_point;
 pub mod logger;
+pub mod memory;
 pub mod panics;
 
 use log::info;
-use matrix_boot_args::{MatrixBootInfo, MatrixPixel};
+use matrix_boot_args::{MatrixBootInfo, frame_buffer::MatrixPixel};
 
 use crate::{logger::init_basic_logger, panics::hlt};
 
@@ -21,22 +22,20 @@ fn get_rip() -> u64 {
 }
 
 pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
-    for x in 0..boot_info.frame_buffer.width() {
-        for y in 0..boot_info.frame_buffer.height() {
-            boot_info
-                .frame_buffer
-                .draw_pixel(&MatrixPixel::new(0, 0, 0), x, y);
-        }
-    }
-    
+    boot_info
+        .frame_buffer
+        .get_slice_mut()
+        .fill(MatrixPixel::new(0x69, 0x69, 0x69));
+
     init_basic_logger();
 
     info!("starting matrix os...");
     info!("we are runinng at 0x{:x}!", get_rip());
+    info!("got physical offset at 0x{:x}", boot_info.phys_offset);
 
     arch::x64::init_x64();
 
     info!("did not crash!!!");
-    
+
     hlt();
 }

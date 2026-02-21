@@ -5,6 +5,7 @@ use crate::frame_buffer::MatrixFrameBuffer;
 pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> !;
 
 pub mod frame_buffer;
+pub mod memory_map;
 
 #[repr(C)]
 pub struct MatrixBootInfo {

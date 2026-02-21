@@ -2,6 +2,8 @@
 #![no_main]
 #![feature(abi_x86_interrupt)]
 
+extern crate alloc;
+
 pub mod arch;
 pub mod entry_point;
 pub mod logger;

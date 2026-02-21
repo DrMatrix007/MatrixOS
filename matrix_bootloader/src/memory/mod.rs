@@ -26,12 +26,11 @@ pub struct KernelPageTable<'a> {
 }
 
 impl<'a> KernelPageTable<'a> {
-    
     /// # Safety
     ///
     /// changes the current page table
     /// if the current code is not mapped, the cpu tries to execute unmapped pages
-    /// 
+    ///
     pub unsafe fn apply(&self) {
         unsafe {
             use x86_64::registers::control::{Cr3, Cr3Flags};
@@ -63,7 +62,7 @@ pub fn create_kernel_page_table(
 
     info!("before mapping stuff");
 
-    map_kernel::<Size4KiB, _>(
+    map_kernel::<Size2MiB, _>(
         &mut kernel_page_table.page_table,
         loaded_kernel.image_base,
         loaded_kernel.image_size,

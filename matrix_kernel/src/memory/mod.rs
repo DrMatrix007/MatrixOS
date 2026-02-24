@@ -12,9 +12,9 @@ pub unsafe fn init(physical_memory_offset: VirtAddr) -> OffsetPageTable<'static>
         OffsetPageTable::new(level_4_table, physical_memory_offset)
     };
 
-    let frame_allocator = Boot
+    // let frame_allocator = Boot
 
-    init_heap(mapper, frame_allocator);
+    // init_heap(mapper, frame_allocator);
 
     page_table
 }

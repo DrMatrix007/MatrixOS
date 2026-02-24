@@ -3,7 +3,12 @@ use log::info;
 pub mod gdt;
 pub mod interrupts;
 
-pub fn init_x64() {
+
+/// # Safety
+///
+/// init some x64 stuff. should be called once in the boot of the kernel 
+/// 
+pub unsafe fn init_x64() {
     gdt::init();
     interrupts::init_idt();
 

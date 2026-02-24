@@ -1,13 +1,21 @@
-use matrix_boot_args::MatrixBootInfo;
+use matrix_boot_args::memory_map::MemoryMap;
 use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 
-use crate::memory::{allocator::init_heap, paging::get_page_table};
+use crate::memory::paging::get_page_table;
 
 pub mod allocator;
 pub mod paging;
 pub mod simple_allocator;
 
-pub unsafe fn init(physical_memory_offset: VirtAddr, boot_info: &MatrixBootInfo) -> OffsetPageTable<'static> {
+
+/// # Safety
+/// 
+/// creates heap and stuff. should be called once in the kenrel boot
+/// 
+pub unsafe fn init_memory(
+    physical_memory_offset: VirtAddr,
+    _boot_info: &MemoryMap,
+) -> OffsetPageTable<'static> {
     let page_table = unsafe {
         let level_4_table = get_page_table(physical_memory_offset);
         OffsetPageTable::new(level_4_table, physical_memory_offset)

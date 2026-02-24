@@ -1,5 +1,6 @@
 
 #[repr(C)]
+#[derive(Debug)]
 pub enum MemoryRegionKind {
     Usable,
     Bootloader,
@@ -7,6 +8,7 @@ pub enum MemoryRegionKind {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct MemoryRegion {
     kind: MemoryRegionKind,
     phys_start: u64,
@@ -24,6 +26,7 @@ impl MemoryRegion {
 }
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct MemoryMap {
     mem_regions: *const MemoryRegion,
     size: u64,

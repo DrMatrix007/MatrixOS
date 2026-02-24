@@ -11,6 +11,7 @@ pub mod frame_buffer;
 pub mod memory_map;
 
 #[repr(C)]
+#[derive(Debug)]
 pub struct MatrixBootInfo {
     pub data: u64,
     pub frame_buffer: MatrixFrameBuffer,

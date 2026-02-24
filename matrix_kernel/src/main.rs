@@ -32,6 +32,8 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
     info!("starting matrix os...");
     info!("we are runinng at 0x{:x}!", get_rip());
     info!("got physical offset at 0x{:x}", boot_info.phys_offset);
+    info!("got args: {:#?}", boot_info);
+    info!("got memory map with len: {:?}", boot_info.memory_map.get_slice().len());
 
     arch::x64::init_x64();
 

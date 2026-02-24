@@ -62,7 +62,7 @@ pub fn create_kernel_page_table(
 
     info!("before mapping stuff");
 
-    map_kernel::<Size2MiB, _>(
+    map_kernel::<Size4KiB, _>(
         &mut kernel_page_table.page_table,
         loaded_kernel.image_base,
         loaded_kernel.image_size,

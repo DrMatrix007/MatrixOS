@@ -1,10 +1,11 @@
-use core::{alloc::GlobalAlloc, ptr::null_mut};
+use core::alloc::GlobalAlloc;
 
 pub struct Dummy;
 
 unsafe impl GlobalAlloc for Dummy {
     unsafe fn alloc(&self, _: core::alloc::Layout) -> *mut u8 {
-        panic!("damn");
+        // panic!("damn");
+        core::ptr::null_mut()
     }
 
     unsafe fn dealloc(&self, _: *mut u8, _: core::alloc::Layout) {
@@ -12,5 +13,5 @@ unsafe impl GlobalAlloc for Dummy {
     }
 }
 
-#[global_allocator]
-static ALLOCATOR: Dummy = Dummy;
+// #[global_allocator]
+// static ALLOCATOR: Dummy = Dummy;

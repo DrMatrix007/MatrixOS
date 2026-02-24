@@ -1,9 +1,10 @@
 use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
 
-use crate::kernel_entry;
+use crate::{kernel_entry, logger::init_basic_logger};
 
 #[unsafe(no_mangle)]
 extern "sysv64" fn _start(boot_info: *mut MatrixBootInfo) -> ! {
+    init_basic_logger();
     kernel_entry(unsafe { &mut *boot_info })
 }
 

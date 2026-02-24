@@ -16,7 +16,6 @@ use uefi::{
     Status,
     boot::{self},
     entry,
-    mem::memory_map::MemoryMapMut,
 };
 
 use crate::{args::make_args, kernel_loader::load_kernel, memory::create_kernel_page_table};
@@ -33,7 +32,7 @@ fn main() -> Status {
         .unwrap();
 
     info!("relocating in 0x{:x}", kernel.image_base);
-
+    info!("entry at 0x{:x}", kernel.entry as u64);
     info!("got kernel with size of 0x{:x}", kernel.image_size);
 
     let entry = kernel.entry;
@@ -42,12 +41,12 @@ fn main() -> Status {
         .context("get bootinfo")
         .unwrap();
 
+    info!("got args at 0x{:x}", boot_info as u64);
+
     let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START);
     info!("got memory");
 
-    let mut map = unsafe { boot::exit_boot_services(None) };
-
-    map.sort();
+    _ = unsafe { boot::exit_boot_services(None) };
 
     unsafe { page_table.apply() };
 

@@ -79,7 +79,7 @@ pub fn create_kernel_page_table(
 
     let phys_end = get_max_phys(memory_map);
 
-    info!("size of memory: {}", phys_end);
+    info!("size of memory: 0x{:x}", phys_end);
 
     map_physical_memory_offset::<Size1GiB>(
         &mut kernel_page_table.page_table,
@@ -97,8 +97,11 @@ pub fn create_kernel_page_table(
 }
 
 fn get_max_phys(memory_map: MemoryMapOwned) -> u64 {
-    let last_entry = memory_map.entries().last().unwrap();
-    last_entry.phys_start + last_entry.page_count * PAGE_SIZE as u64
+    memory_map
+        .entries()
+        .map(|e| e.phys_start + e.page_count * PAGE_SIZE as u64)
+        .max()
+        .unwrap()
 }
 
 fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(

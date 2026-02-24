@@ -2,7 +2,7 @@
 #![no_main]
 #![feature(abi_x86_interrupt)]
 
-extern crate alloc;
+// extern crate alloc;
 
 pub mod arch;
 pub mod entry_point;
@@ -28,8 +28,6 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
         .frame_buffer
         .get_slice_mut()
         .fill(MatrixPixel::new(0x69, 0x69, 0x69));
-
-    init_basic_logger();
 
     info!("starting matrix os...");
     info!("we are runinng at 0x{:x}!", get_rip());

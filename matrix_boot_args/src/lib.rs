@@ -1,5 +1,7 @@
 #![no_std]
 
+use core::ptr::null;
+
 use crate::{
     frame_buffer::MatrixFrameBuffer, memory_map::MatrixMemoryMap, relocatable::Relocatable,
 };
@@ -13,35 +15,31 @@ pub mod relocatable;
 #[repr(C)]
 #[derive(Debug)]
 pub struct MatrixBootInfo {
-    pub data: u64,
     pub frame_buffer: MatrixFrameBuffer,
-    pub phys_offset: u64,
+    pub phys_offset: *const (),
     pub memory_map: MatrixMemoryMap,
 }
 
 impl MatrixBootInfo {
-    pub fn new(
-        data: u64,
-        frame_buffer: MatrixFrameBuffer,
-        phys_offset: u64,
-        memory_map: MatrixMemoryMap,
-    ) -> Self {
+    pub fn new(frame_buffer: MatrixFrameBuffer, memory_map: MatrixMemoryMap) -> Self {
         Self {
-            data,
             frame_buffer,
-            phys_offset,
+            phys_offset: null(),
             memory_map,
         }
+    }
+
+    pub fn phys_offset(&self) -> u64 {
+        self.phys_offset as _
     }
 }
 
 impl Relocatable for MatrixBootInfo {
     unsafe fn relocated(&self, relocate_addr: u64) -> Self {
         Self {
-            data: self.data,
             frame_buffer: unsafe { self.frame_buffer.relocated(relocate_addr) },
             memory_map: unsafe { self.memory_map.relocated(relocate_addr) },
-            phys_offset: self.phys_offset,
+            phys_offset: relocate_addr as _,
         }
     }
 }

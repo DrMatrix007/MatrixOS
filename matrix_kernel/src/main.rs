@@ -11,7 +11,9 @@ pub mod memory;
 pub mod panics;
 
 use log::info;
-use matrix_boot_args::{MatrixBootInfo, frame_buffer::MatrixPixel, memory_map::MatrixMemoryRegionKind};
+use matrix_boot_args::{
+    MatrixBootInfo, frame_buffer::MatrixPixel, memory_map::MatrixMemoryRegionKind,
+};
 use x86_64::VirtAddr;
 
 use crate::panics::hlt;
@@ -32,7 +34,7 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
 
     info!("starting matrix os...");
     info!("we are runinng at 0x{:x}!", get_rip());
-    info!("got physical offset at 0x{:x}", boot_info.phys_offset);
+    info!("got physical offset at 0x{:x}", boot_info.phys_offset());
     info!("got args: {:#?}", boot_info);
     info!(
         "got memory map with len: {:?}",
@@ -50,7 +52,10 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
 
     unsafe {
         arch::x64::init_x64();
-        memory::init_memory(VirtAddr::new(boot_info.phys_offset), &boot_info.memory_map);
+        memory::init_memory(
+            VirtAddr::new(boot_info.phys_offset()),
+            &boot_info.memory_map,
+        );
     }
 
     info!("did not crash!!!");

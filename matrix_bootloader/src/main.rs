@@ -32,7 +32,7 @@ fn main() -> Status {
         .unwrap();
 
     info!("relocating in 0x{:x}", kernel.image_base);
-    info!("entry at 0x{:x}", kernel.entry as u64);
+    info!("entry at 0x{:x}", kernel.entry as usize);
     info!("got kernel with size of 0x{:x}", kernel.image_size);
 
     let entry = kernel.entry;
@@ -43,7 +43,7 @@ fn main() -> Status {
 
     info!("got args at 0x{:x}", boot_info as u64);
 
-    let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START);
+    let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START).unwrap();
     info!("got memory");
 
     _ = unsafe { boot::exit_boot_services(None) };

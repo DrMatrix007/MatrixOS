@@ -31,10 +31,7 @@ pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
     let memory_regions = make_memory_map().context("get memory regions")?;
 
     unsafe {
-        boot_info.write(
-            MatrixBootInfo::new(0x1b, frame_buffer, phys_offset, memory_regions)
-                .relocated(phys_offset),
-        )
+        boot_info.write(MatrixBootInfo::new(frame_buffer, memory_regions).relocated(phys_offset))
     };
 
     Ok((boot_info as u64 + phys_offset) as *mut MatrixBootInfo)

@@ -1,7 +1,6 @@
 use core::fmt::Debug;
 
 use anyhow::{Result, anyhow};
-use log::info;
 use uefi::boot::{self, PAGE_SIZE};
 use x86_64::{
     PhysAddr, VirtAddr,
@@ -66,12 +65,6 @@ pub(crate) fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(
         let page = Page::containing_address(VirtAddr::new(virt));
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
-        info!(
-            "mapped 0x{:x} to 0x{:x}",
-            frame.start_address(),
-            page.start_address()
-        );
 
         unsafe {
             mapper

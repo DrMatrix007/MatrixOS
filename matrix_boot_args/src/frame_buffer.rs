@@ -1,3 +1,5 @@
+use crate::relocatable::Relocatable;
+
 #[repr(C)]
 #[derive(Debug, Clone, Copy, Default)]
 pub struct MatrixPixel {
@@ -61,6 +63,16 @@ impl MatrixFrameBuffer {
             data: data.as_mut_ptr(),
             width,
             height,
+        }
+    }
+}
+
+impl Relocatable for MatrixFrameBuffer {
+    unsafe fn relocated(&self, relocate_addr: u64) -> Self {
+        Self {
+            data: (self.data as u64 + relocate_addr) as *mut MatrixPixel,
+            width: self.width,
+            height: self.height,
         }
     }
 }

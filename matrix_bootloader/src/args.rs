@@ -1,12 +1,13 @@
 use core::slice;
 
 use alloc::vec::Vec;
-use anyhow::{Context, Result};
+use anyhow::{Context, Ok, Result};
 use log::info;
 use matrix_boot_args::{
     MatrixBootInfo,
     frame_buffer::{MatrixFrameBuffer, MatrixPixel},
-    memory_map::{MemoryRegion, MemoryRegionKind},
+    memory_map::{MatrixMemoryMap, MatrixMemoryRegion, MatrixMemoryRegionKind},
+    relocatable::Relocatable,
 };
 use uefi::{
     boot::{self, MemoryType, PAGE_SIZE, memory_map},
@@ -27,44 +28,48 @@ pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
     .as_ptr();
     let frame_buffer = make_frame_buffer().context("getting frame buffer")?;
 
-    let memory_regions = make_regions(phys_offset).context("get memory regions")?;
+    let memory_regions = make_memory_map().context("get memory regions")?;
 
     unsafe {
-        boot_info.write(MatrixBootInfo::new(
-            0x1b,
-            frame_buffer,
-            phys_offset,
-            memory_regions,
-        ))
+        boot_info.write(
+            MatrixBootInfo::new(0x1b, frame_buffer, phys_offset, memory_regions)
+                .relocated(phys_offset),
+        )
     };
 
     Ok((boot_info as u64 + phys_offset) as *mut MatrixBootInfo)
 }
 
-fn make_regions(phys_offset: u64) -> Result<&'static mut [MemoryRegion]> {
+fn make_memory_map() -> Result<MatrixMemoryMap> {
     let mut map = memory_map(MemoryType::BOOT_SERVICES_DATA)?;
     map.sort();
     let data: Vec<_> = map
         .entries()
         .map(|x| {
             let kind = match x.ty {
-                MemoryType::CONVENTIONAL => MemoryRegionKind::Usable,
-                unknown_uefi => MemoryRegionKind::UnkownUefi(unknown_uefi.0),
+                MemoryType::CONVENTIONAL => MatrixMemoryRegionKind::Usable,
+                unknown_uefi => MatrixMemoryRegionKind::UnkownUefi(unknown_uefi.0),
             };
-            MemoryRegion::new(kind, x.phys_start, x.page_count)
+            MatrixMemoryRegion::new(kind, x.phys_start, x.page_count)
         })
         .collect();
 
     info!("got memory regions");
 
-    boot::allocate_pages(
+    let slice = boot::allocate_pages(
         boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
-        (core::mem::size_of::<MemoryRegion>() * data.len()).div_ceil(PAGE_SIZE),
+        (core::mem::size_of::<MatrixMemoryRegion>() * data.len()).div_ceil(PAGE_SIZE),
     )
     .context("allocating the memory map")
-    .map(|x| unsafe { x.add(phys_offset as _) })
-    .map(|x| unsafe { core::slice::from_raw_parts_mut(x.cast().as_ptr(), data.len()) })
+    .map(|x| {
+        let slice =
+            unsafe { core::slice::from_raw_parts_mut::<'static>(x.cast().as_ptr(), data.len()) };
+        slice.copy_from_slice(&data);
+        slice
+    })?;
+
+    Ok(MatrixMemoryMap::new_from_slice(slice))
 }
 
 fn make_frame_buffer() -> Result<MatrixFrameBuffer> {

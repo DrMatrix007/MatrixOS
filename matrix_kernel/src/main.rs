@@ -11,7 +11,7 @@ pub mod memory;
 pub mod panics;
 
 use log::info;
-use matrix_boot_args::{MatrixBootInfo, frame_buffer::MatrixPixel};
+use matrix_boot_args::{MatrixBootInfo, frame_buffer::MatrixPixel, memory_map::MatrixMemoryRegionKind};
 use x86_64::VirtAddr;
 
 use crate::panics::hlt;
@@ -37,6 +37,15 @@ pub fn kernel_entry(boot_info: &mut MatrixBootInfo) -> ! {
     info!(
         "got memory map with len: {:?}",
         boot_info.memory_map.get_slice().len()
+    );
+    info!(
+        "got memory map with usable regions: {:#?}",
+        boot_info
+            .memory_map
+            .get_slice()
+            .iter()
+            .filter(|x| matches!(x.kind, MatrixMemoryRegionKind::Usable))
+            .count()
     );
 
     unsafe {

@@ -1,4 +1,4 @@
-use matrix_boot_args::memory_map::MemoryMap;
+use matrix_boot_args::memory_map::MatrixMemoryMap;
 use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 
 use crate::memory::paging::get_page_table;
@@ -14,7 +14,7 @@ pub mod simple_allocator;
 /// 
 pub unsafe fn init_memory(
     physical_memory_offset: VirtAddr,
-    _boot_info: &MemoryMap,
+    _boot_info: &MatrixMemoryMap,
 ) -> OffsetPageTable<'static> {
     let page_table = unsafe {
         let level_4_table = get_page_table(physical_memory_offset);

@@ -12,13 +12,17 @@ pub mod protocols;
 
 use anyhow::Context;
 use log::info;
+use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
 use uefi::{
     Status,
     boot::{self},
     entry,
 };
 
-use crate::{args::make_args, kernel_loader::load_kernel, memory::create_kernel_page_table};
+use crate::{
+    args::make_args, kernel_loader::load_kernel, kernel_stack::KernelStack,
+    memory::create_kernel_page_table,
+};
 
 static KERNEL_START: u64 = 0xFFFF_FFFF_8000_0000;
 static PHYS_OFFSET_START: u64 = 0xFFFF_8000_0000_0000;
@@ -30,6 +34,8 @@ fn main() -> Status {
     let kernel = load_kernel(KERNEL_START)
         .context("failed to load kernel")
         .unwrap();
+
+    let kernel_stack = KernelStack::new().unwrap();
 
     info!("relocating in 0x{:x}", kernel.image_base);
     info!("entry at 0x{:x}", kernel.entry as usize);
@@ -50,5 +56,25 @@ fn main() -> Status {
 
     unsafe { page_table.apply() };
 
-    entry(boot_info);
+    unsafe { jump_with_stack(kernel_stack, entry, boot_info, PHYS_OFFSET_START) }
+}
+
+fn jump_with_stack(kernel_stack: KernelStack, entry: MatrixEntryPoint, boot_info: *mut MatrixBootInfo) -> ! {
+
+    unsafe {
+        jump_with_stack_impl(kernel_stack.top(), entry, boot_info)
+    }
+}
+
+#[unsafe(naked)]
+unsafe "sysv64" fn jump_with_stack_impl(
+    _stack_top: u64,
+    _entry: extern "sysv64" fn(*mut MatrixBootInfo) -> !,
+    _info: *const MatrixBootInfo,
+) -> ! {
+    core::arch::naked_asm!(
+        "mov rsp, rdi", // switch to new stack
+        "mov rdi, rdx", // first arg = info
+        "jmp rsi",      // jump to entry
+    );
 }

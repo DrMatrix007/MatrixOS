@@ -3,7 +3,7 @@ use anyhow::{Context, Result, anyhow};
 use bytemuck::{Pod, Zeroable};
 use log::info;
 
-use matrix_boot_common::boot_info::{MatrixEntryPoint, MatrixEntryPointRaw};
+use matrix_boot_common::boot_info::MatrixEntryPointRaw;
 use uefi::boot::{MemoryType, PAGE_SIZE};
 
 use crate::elf_loader::elf::{

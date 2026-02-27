@@ -1,5 +1,5 @@
 use linked_list_allocator::LockedHeap;
-use matrix_boot_args::memory_map::{MatrixMemoryMap, MatrixMemoryRegionKind};
+use matrix_boot_common::boot_info::memory_map::{MatrixMemoryMap, MatrixMemoryRegionKind};
 use x86_64::{
     PhysAddr, VirtAddr,
     structures::paging::{

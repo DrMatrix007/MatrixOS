@@ -1,5 +1,5 @@
 use log::info;
-use matrix_boot_args::memory_map::MatrixMemoryMap;
+use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
 use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 
 use crate::memory::{allocator::init_heap, paging::get_page_table};

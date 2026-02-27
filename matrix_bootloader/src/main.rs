@@ -12,7 +12,7 @@ pub mod protocols;
 
 use anyhow::Context;
 use log::info;
-use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
+use matrix_boot_common::kernel_jumper::KernelJumper;
 use uefi::{
     Status,
     boot::{self},
@@ -20,7 +20,7 @@ use uefi::{
 };
 
 use crate::{
-    args::make_args, kernel_loader::load_kernel, kernel_stack::KernelStack,
+    args::make_args, kernel_loader::load_kernel, kernel_stack::make_stack,
     memory::create_kernel_page_table,
 };
 
@@ -35,7 +35,7 @@ fn main() -> Status {
         .context("failed to load kernel")
         .unwrap();
 
-    let kernel_stack = KernelStack::new().unwrap();
+    let kernel_stack = make_stack().unwrap();
 
     info!("relocating in 0x{:x}", kernel.image_base);
     info!("entry at 0x{:x}", kernel.entry as usize);
@@ -43,11 +43,9 @@ fn main() -> Status {
 
     let entry = kernel.entry;
 
-    let boot_info = make_args(PHYS_OFFSET_START)
-        .context("get bootinfo")
-        .unwrap();
+    let boot_info = make_args().context("get bootinfo").unwrap();
 
-    info!("got args at 0x{:x}", boot_info as u64);
+    info!("got args at 0x{:x}", boot_info.info() as u64);
 
     let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START).unwrap();
     info!("got memory");
@@ -56,25 +54,7 @@ fn main() -> Status {
 
     unsafe { page_table.apply() };
 
-    unsafe { jump_with_stack(kernel_stack, entry, boot_info, PHYS_OFFSET_START) }
-}
+    let kernel_jumper = KernelJumper::new(kernel_stack, entry, boot_info);
 
-fn jump_with_stack(kernel_stack: KernelStack, entry: MatrixEntryPoint, boot_info: *mut MatrixBootInfo) -> ! {
-
-    unsafe {
-        jump_with_stack_impl(kernel_stack.top(), entry, boot_info)
-    }
-}
-
-#[unsafe(naked)]
-unsafe "sysv64" fn jump_with_stack_impl(
-    _stack_top: u64,
-    _entry: extern "sysv64" fn(*mut MatrixBootInfo) -> !,
-    _info: *const MatrixBootInfo,
-) -> ! {
-    core::arch::naked_asm!(
-        "mov rsp, rdi", // switch to new stack
-        "mov rdi, rdx", // first arg = info
-        "jmp rsi",      // jump to entry
-    );
+    kernel_jumper.jump(PHYS_OFFSET_START);
 }

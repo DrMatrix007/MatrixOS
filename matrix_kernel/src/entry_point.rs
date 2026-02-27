@@ -1,4 +1,4 @@
-use matrix_boot_args::{MatrixBootInfo, MatrixEntryPoint};
+use matrix_boot_common::boot_info::{MatrixBootInfo, MatrixEntryPoint};
 
 use crate::{kernel_entry, logger::init_basic_logger};
 

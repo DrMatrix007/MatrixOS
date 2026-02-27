@@ -1,7 +1,7 @@
-pub trait Relocatable {
+pub(crate) trait Relocatable {
     /// # Safety
     ///
-    /// this changes the pointers in `Self` 
-    /// 
+    /// this changes the pointers in `Self`
+    ///
     unsafe fn relocated(&self, relocate_addr: u64) -> Self;
 }

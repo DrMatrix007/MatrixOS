@@ -1,11 +1,9 @@
-use core::ops::Add;
-
 use alloc::slice;
 use anyhow::{Context, Result, anyhow};
 use bytemuck::{Pod, Zeroable};
 use log::info;
 
-use matrix_boot_args::MatrixEntryPoint;
+use matrix_boot_common::boot_info::MatrixEntryPoint;
 use uefi::boot::{MemoryType, PAGE_SIZE};
 
 use crate::elf_loader::elf::{
@@ -75,8 +73,7 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
 
     fix_reloactions(file, section_headers, image, relocation_target)?;
 
-    let entry: MatrixEntryPoint =
-        unsafe { core::mem::transmute(relocation_target.add(header.e_entry)) };
+    let entry: MatrixEntryPoint = unsafe { core::mem::transmute(header.e_entry) };
 
     info!("kernel entry point: {:#x}", entry as usize);
 

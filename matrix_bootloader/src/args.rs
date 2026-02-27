@@ -3,11 +3,10 @@ use core::slice;
 use alloc::vec::Vec;
 use anyhow::{Context, Ok, Result};
 use log::info;
-use matrix_boot_args::{
-    MatrixBootInfo,
+use matrix_boot_common::boot_info::{
+    BoxedMatrixBootInfo, MatrixBootInfo,
     frame_buffer::{MatrixFrameBuffer, MatrixPixel},
     memory_map::{MatrixMemoryMap, MatrixMemoryRegion, MatrixMemoryRegionKind},
-    relocatable::Relocatable,
 };
 use uefi::{
     boot::{self, MemoryType, PAGE_SIZE, memory_map},
@@ -17,7 +16,7 @@ use uefi::{
 
 use crate::protocols::get_procotol;
 
-pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
+pub fn make_args() -> Result<BoxedMatrixBootInfo> {
     let boot_info: *mut MatrixBootInfo = boot::allocate_pages(
         boot::AllocateType::AnyPages,
         MemoryType::BOOT_SERVICES_DATA,
@@ -30,11 +29,9 @@ pub fn make_args(phys_offset: u64) -> Result<*mut MatrixBootInfo> {
 
     let memory_regions = make_memory_map().context("get memory regions")?;
 
-    unsafe {
-        boot_info.write(MatrixBootInfo::new(frame_buffer, memory_regions).relocated(phys_offset))
-    };
+    unsafe { boot_info.write(MatrixBootInfo::new(frame_buffer, memory_regions)) };
 
-    Ok((boot_info as u64 + phys_offset) as *mut MatrixBootInfo)
+    Ok(BoxedMatrixBootInfo::new(boot_info))
 }
 
 fn make_memory_map() -> Result<MatrixMemoryMap> {

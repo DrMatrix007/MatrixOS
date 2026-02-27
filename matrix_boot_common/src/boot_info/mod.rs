@@ -1,16 +1,21 @@
-#![no_std]
-
 use core::ptr::null;
 
 use crate::{
-    frame_buffer::MatrixFrameBuffer, memory_map::MatrixMemoryMap, relocatable::Relocatable,
+    boot_info::frame_buffer::MatrixFrameBuffer, boot_info::memory_map::MatrixMemoryMap,
+    relocatable::Relocatable,
 };
-
-pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> !;
 
 pub mod frame_buffer;
 pub mod memory_map;
-pub mod relocatable;
+
+pub type MatrixEntryPoint = extern "sysv64" fn(*mut MatrixBootInfo) -> !;
+
+impl Relocatable for MatrixEntryPoint {
+    unsafe fn relocated(&self, relocate_addr: u64) -> Self {
+        let ptr = *self as usize;
+        unsafe { core::mem::transmute::<usize, Self>(ptr + relocate_addr as usize) }
+    }
+}
 
 #[repr(C)]
 #[derive(Debug)]
@@ -40,6 +45,28 @@ impl Relocatable for MatrixBootInfo {
             frame_buffer: unsafe { self.frame_buffer.relocated(relocate_addr) },
             memory_map: unsafe { self.memory_map.relocated(relocate_addr) },
             phys_offset: relocate_addr as _,
+        }
+    }
+}
+
+pub struct BoxedMatrixBootInfo {
+    info: *mut MatrixBootInfo,
+}
+
+impl BoxedMatrixBootInfo {
+    pub fn new(info: *mut MatrixBootInfo) -> Self {
+        Self { info }
+    }
+
+    pub fn info(&self) -> *mut MatrixBootInfo {
+        self.info
+    }
+}
+
+impl Relocatable for BoxedMatrixBootInfo {
+    unsafe fn relocated(&self, relocate_addr: u64) -> Self {
+        Self {
+            info: (self.info as u64 + relocate_addr) as *mut MatrixBootInfo,
         }
     }
 }

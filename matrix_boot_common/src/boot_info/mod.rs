@@ -17,6 +17,24 @@ impl Relocatable for MatrixEntryPoint {
     }
 }
 
+pub struct MatrixEntryPointRaw(pub(crate) MatrixEntryPoint);
+
+impl MatrixEntryPointRaw {
+    pub fn new(offset_in_kernel: u64) -> Self {
+        Self(unsafe { core::mem::transmute::<u64, MatrixEntryPoint>(offset_in_kernel) })
+    }
+
+    pub fn entry(&self) -> MatrixEntryPoint {
+        self.0
+    }
+}
+
+impl Relocatable for MatrixEntryPointRaw {
+    unsafe fn relocated(&self, relocate_addr: u64) -> Self {
+        Self(unsafe { self.0.relocated(relocate_addr) })
+    }
+}
+
 #[repr(C)]
 #[derive(Debug)]
 pub struct MatrixBootInfo {

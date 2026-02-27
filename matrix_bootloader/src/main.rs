@@ -38,10 +38,8 @@ fn main() -> Status {
     let kernel_stack = make_stack().unwrap();
 
     info!("relocating in 0x{:x}", kernel.image_base);
-    info!("entry at 0x{:x}", kernel.entry as usize);
+    info!("entry at 0x{:x}", kernel.entry.entry() as usize);
     info!("got kernel with size of 0x{:x}", kernel.image_size);
-
-    let entry = kernel.entry;
 
     let boot_info = make_args().context("get bootinfo").unwrap();
 
@@ -54,7 +52,6 @@ fn main() -> Status {
 
     unsafe { page_table.apply() };
 
-    let kernel_jumper = KernelJumper::new(kernel_stack, entry, boot_info);
-
-    kernel_jumper.jump(PHYS_OFFSET_START);
+    let kernel_jumper = KernelJumper::new(kernel_stack, kernel.entry, boot_info);
+    kernel_jumper.jump(PHYS_OFFSET_START, KERNEL_START);
 }

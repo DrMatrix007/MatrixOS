@@ -3,7 +3,7 @@ use anyhow::{Context, Result, anyhow};
 use bytemuck::{Pod, Zeroable};
 use log::info;
 
-use matrix_boot_common::boot_info::MatrixEntryPoint;
+use matrix_boot_common::boot_info::{MatrixEntryPoint, MatrixEntryPointRaw};
 use uefi::boot::{MemoryType, PAGE_SIZE};
 
 use crate::elf_loader::elf::{
@@ -13,7 +13,7 @@ use crate::elf_loader::elf::{
 };
 
 pub struct LoadedElf {
-    pub entry: MatrixEntryPoint,
+    pub entry: MatrixEntryPointRaw,
     pub image_base: u64,
     pub image_size: u64,
 }
@@ -73,12 +73,12 @@ pub fn load_elf(file: &[u8], relocation_target: u64) -> Result<LoadedElf> {
 
     fix_reloactions(file, section_headers, image, relocation_target)?;
 
-    let entry: MatrixEntryPoint = unsafe { core::mem::transmute(header.e_entry) };
+    let entry_raw = MatrixEntryPointRaw::new(header.e_entry);
 
-    info!("kernel entry point: {:#x}", entry as usize);
+    info!("kernel entry point: {:#x}", entry_raw.entry() as usize);
 
     Ok(LoadedElf {
-        entry,
+        entry: entry_raw,
         image_base: image.as_ptr() as u64,
         image_size: image.len() as u64,
     })

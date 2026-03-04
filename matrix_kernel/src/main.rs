@@ -9,6 +9,7 @@ pub mod entry_point;
 pub mod logger;
 pub mod memory;
 pub mod panics;
+pub mod scheduling;
 
 use log::info;
 use matrix_boot_common::boot_info::{
@@ -16,10 +17,9 @@ use matrix_boot_common::boot_info::{
 };
 use x86_64::{
     VirtAddr,
+    instructions::hlt,
     structures::paging::{PageSize, Size4KiB},
 };
-
-use crate::panics::hlt;
 
 fn get_rip() -> u64 {
     let rip: u64;
@@ -50,7 +50,10 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
 
     info!("did not crash!!!");
 
-    hlt();
+    loop {
+        unsafe { core::arch::asm!("mov rax, 0x1b") };
+        hlt();
+    }
 }
 
 fn log_boot_stuff(boot_info: &MatrixBootInfo) {

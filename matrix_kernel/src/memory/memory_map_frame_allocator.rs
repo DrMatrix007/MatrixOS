@@ -1,4 +1,3 @@
-use log::info;
 use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
 use x86_64::VirtAddr;
 use x86_64::structures::paging::FrameDeallocator;
@@ -67,8 +66,6 @@ impl MemoryMapPageAllocator {
         for index in 0..silly.get_next_index() {
             res.set_present(index, true);
         }
-        
-        info!("bitmap: {:?}", res.bitmap);
 
         res
     }

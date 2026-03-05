@@ -1,3 +1,8 @@
+use x86_64::{
+    PhysAddr,
+    structures::paging::{PageSize, PhysFrame, Size4KiB},
+};
+
 use crate::relocatable::Relocatable;
 
 #[repr(C)]
@@ -48,6 +53,18 @@ impl MatrixMemoryMap {
 
     pub fn get_slice(&self) -> &[MatrixMemoryRegion] {
         unsafe { core::slice::from_raw_parts(self.mem_regions, self.len as _) }
+    }
+
+    pub fn frame_iter(&self) -> impl Iterator<Item = PhysFrame<Size4KiB>> {
+        self.get_slice()
+            .iter()
+            .filter(|region| matches!(region.kind, MatrixMemoryRegionKind::Usable))
+            .flat_map(|region| {
+                (region.phys_start
+                    ..(region.phys_start + region.amount_of_4k_pages * Size4KiB::SIZE))
+                    .step_by(Size4KiB::SIZE as _)
+            })
+            .map(|x| PhysFrame::containing_address(PhysAddr::new(x)))
     }
 }
 

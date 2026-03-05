@@ -1,49 +1,18 @@
+use lazy_static::lazy_static;
 use linked_list_allocator::LockedHeap;
-use matrix_boot_common::boot_info::memory_map::{MatrixMemoryMap, MatrixMemoryRegionKind};
+use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
 use x86_64::{
-    PhysAddr, VirtAddr,
+    VirtAddr,
     structures::paging::{
-        FrameAllocator, Mapper, Page, PageSize, PageTableFlags, PhysFrame, Size4KiB,
-        mapper::MapToError, page::PageRangeInclusive,
+        FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB, mapper::MapToError,
+        page::PageRangeInclusive,
     },
 };
 
-struct MemoryMapPageAllocator {
-    memory_map: &'static MatrixMemoryMap,
-    next: usize,
-}
-
-impl MemoryMapPageAllocator {
-    fn new(memory_map: &'static MatrixMemoryMap) -> Self {
-        Self {
-            memory_map,
-            next: 0,
-        }
-    }
-}
-
-unsafe impl FrameAllocator<Size4KiB> for MemoryMapPageAllocator {
-    fn allocate_frame(&mut self) -> Option<PhysFrame<Size4KiB>> {
-        let phys_addr = self
-            .memory_map
-            .get_slice()
-            .iter()
-            .filter(|region| matches!(region.kind, MatrixMemoryRegionKind::Usable))
-            .flat_map(|region| {
-                (region.phys_start
-                    ..(region.phys_start + region.amount_of_4k_pages * Size4KiB::SIZE))
-                    .step_by(Size4KiB::SIZE as _)
-            })
-            .nth(self.next)?;
-
-        self.next += 1;
-
-        Some(PhysFrame::containing_address(PhysAddr::new(phys_addr)))
-    }
-}
-
-pub const HEAP_START: u64 = 0x_4444_4444_0000;
-pub const HEAP_SIZE: u64 = 10 * 4096;
+use crate::memory::{
+    frame_allocator::MemoryMapPageAllocator,
+    memory_locations::{HEAP_SIZE, HEAP_START},
+};
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
@@ -52,7 +21,7 @@ pub(super) fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
     memory_map: &'static MatrixMemoryMap,
 ) -> Result<(), MapToError<Size4KiB>> {
-    let mut frame_allocator = MemoryMapPageAllocator::new(memory_map);
+    let mut frame_allocator = MemoryMapPageAllocator::new(memory_map, mapper);
 
     let page_range: PageRangeInclusive<Size4KiB> = {
         let heap_start = VirtAddr::new(HEAP_START);

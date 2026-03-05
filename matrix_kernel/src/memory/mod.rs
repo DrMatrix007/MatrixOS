@@ -5,8 +5,10 @@ use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 use crate::memory::{allocator::init_heap, paging::get_page_table};
 
 pub mod allocator;
+pub mod frame_allocator;
+pub mod memory_locations;
 pub mod paging;
-pub mod simple_allocator;
+pub mod silly_frame_allocator;
 
 /// # Safety
 ///

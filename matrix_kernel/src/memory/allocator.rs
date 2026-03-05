@@ -1,6 +1,6 @@
-use lazy_static::lazy_static;
 use linked_list_allocator::LockedHeap;
 use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
+use spin::mutex::SpinMutex;
 use x86_64::{
     VirtAddr,
     structures::paging::{
@@ -10,18 +10,24 @@ use x86_64::{
 };
 
 use crate::memory::{
-    frame_allocator::MemoryMapPageAllocator,
+    locked_allocator::LockedAllocator,
     memory_locations::{HEAP_SIZE, HEAP_START},
+    memory_map_frame_allocator::MemoryMapPageAllocator,
 };
 
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
+static FRAME_ALLOCATOR: SpinMutex<LockedAllocator<MemoryMapPageAllocator, Size4KiB>> =
+    SpinMutex::new(LockedAllocator::new());
+
 pub(super) fn init_heap(
     mapper: &mut impl Mapper<Size4KiB>,
     memory_map: &'static MatrixMemoryMap,
 ) -> Result<(), MapToError<Size4KiB>> {
-    let mut frame_allocator = MemoryMapPageAllocator::new(memory_map, mapper);
+    let mut frame_allocator = FRAME_ALLOCATOR.lock();
+
+    frame_allocator.init(MemoryMapPageAllocator::new(memory_map, mapper));
 
     let page_range: PageRangeInclusive<Size4KiB> = {
         let heap_start = VirtAddr::new(HEAP_START);
@@ -39,7 +45,7 @@ pub(super) fn init_heap(
 
         unsafe {
             mapper
-                .map_to(page, frame, flags, &mut frame_allocator)?
+                .map_to(page, frame, flags, &mut *frame_allocator)?
                 .flush()
         };
     }

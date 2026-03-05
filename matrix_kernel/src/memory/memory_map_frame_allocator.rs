@@ -1,3 +1,4 @@
+use log::info;
 use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
 use x86_64::VirtAddr;
 use x86_64::structures::paging::FrameDeallocator;
@@ -11,7 +12,7 @@ use x86_64::structures::paging::PageTableFlags;
 use x86_64::structures::paging::Size4KiB;
 
 use crate::memory::memory_locations::FRAME_ALLOC_BITMAP_LOCATION;
-use crate::memory::silly_frame_allocator::SillyMemoryMapFrameAllocator;
+use crate::memory::silly_memory_map_frame_allocator::SillyMemoryMapFrameAllocator;
 use x86_64::structures::paging::Mapper;
 
 static BITS_IN_U64: usize = 64;
@@ -66,6 +67,8 @@ impl MemoryMapPageAllocator {
         for index in 0..silly.get_next_index() {
             res.set_present(index, true);
         }
+        
+        info!("bitmap: {:?}", res.bitmap);
 
         res
     }

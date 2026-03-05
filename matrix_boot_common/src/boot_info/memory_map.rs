@@ -38,6 +38,8 @@ pub struct MatrixMemoryMap {
     len: u64,
 }
 
+unsafe impl Sync for MatrixMemoryMap {}
+
 impl MatrixMemoryMap {
     /// # Safety
     ///

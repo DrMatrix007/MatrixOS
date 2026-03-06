@@ -8,6 +8,7 @@ pub mod arch;
 pub mod entry_point;
 pub mod logger;
 pub mod memory;
+pub mod memory_locations;
 pub mod panics;
 pub mod scheduling;
 
@@ -20,6 +21,8 @@ use x86_64::{
     instructions::hlt,
     structures::paging::{PageSize, Size4KiB},
 };
+
+use crate::scheduling::process::Process;
 
 fn get_rip() -> u64 {
     let rip: u64;
@@ -49,6 +52,8 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
     }
 
     info!("did not crash!!!");
+
+    let _ = Process::new().unwrap();
 
     loop {
         unsafe { core::arch::asm!("mov rax, 0x1b") };

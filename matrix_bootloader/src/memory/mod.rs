@@ -1,7 +1,8 @@
 mod mappings;
 
-use anyhow::{Context, Result};
+use anyhow::{Context, Result, anyhow};
 use log::info;
+use matrix_boot_common::memory::mappings::map_kernel_to_mapper;
 use uefi::{
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapMut, MemoryMapOwned},
@@ -11,7 +12,7 @@ use x86_64::structures::paging::{Size1GiB, Size4KiB};
 use crate::{
     elf_loader::loader::LoadedElf,
     memory::mappings::{
-        KernelPageTable, create_page_table, map_kernel, map_physical_memory_offset,
+        KernelPageTable, UefiPageAllocator, create_page_table, map_physical_memory_offset,
     },
 };
 
@@ -24,12 +25,14 @@ pub fn create_kernel_page_table(
 
     info!("before mapping stuff");
 
-    map_kernel::<Size4KiB, _>(
-        kernel_page_table.page_table_mut(),
+    map_kernel_to_mapper::<Size4KiB>(
         loaded_kernel.image_base,
         loaded_kernel.image_size,
         new_kernel_base,
+        kernel_page_table.page_table_mut(),
+        &mut UefiPageAllocator,
     )
+    .map_err(|x| anyhow!("{:?}", x))
     .context("mapping kernel")?;
 
     info!("kenrel mapped");

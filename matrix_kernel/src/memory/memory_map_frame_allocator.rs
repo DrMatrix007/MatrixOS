@@ -10,13 +10,13 @@ use x86_64::structures::paging::FrameAllocator;
 use x86_64::structures::paging::PageTableFlags;
 use x86_64::structures::paging::Size4KiB;
 
-use crate::memory::memory_locations::FRAME_ALLOC_BITMAP_LOCATION;
 use crate::memory::silly_memory_map_frame_allocator::SillyMemoryMapFrameAllocator;
+use crate::memory_locations::FRAME_ALLOC_BITMAP_LOCATION;
 use x86_64::structures::paging::Mapper;
 
-static BITS_IN_U64: usize = 64;
-
-pub(crate) struct MemoryMapPageAllocator {
+type BitMapValue = u64;
+const BITS_IN_BITMAP_VALUE: usize = size_of::<BitMapValue>() * 8;
+pub struct MemoryMapPageAllocator {
     pub(crate) bitmap: &'static mut [u64],
     pub(crate) memory_map: &'static MatrixMemoryMap,
     pub(crate) next: usize,
@@ -31,8 +31,9 @@ impl MemoryMapPageAllocator {
 
         let pages_count = memory_map.frame_iter().count();
 
-        let bytes_needed = pages_count / BITS_IN_U64 as usize;
-        let pages_needed = bytes_needed / Size4KiB::SIZE as usize;
+        let values_needed = pages_count / BITS_IN_BITMAP_VALUE as usize;
+        let pages_needed =
+            (values_needed * size_of::<BitMapValue>()).div_ceil(Size4KiB::SIZE as usize);
 
         let pages = {
             let start_page =
@@ -57,7 +58,7 @@ impl MemoryMapPageAllocator {
 
         let mut res = Self {
             bitmap: unsafe {
-                core::slice::from_raw_parts_mut(FRAME_ALLOC_BITMAP_LOCATION as _, bytes_needed)
+                core::slice::from_raw_parts_mut(FRAME_ALLOC_BITMAP_LOCATION as _, values_needed)
             },
             memory_map,
             next: 0,
@@ -71,15 +72,15 @@ impl MemoryMapPageAllocator {
     }
 
     pub fn is_present(&self, page_index: usize) -> bool {
-        let byte_index = page_index / BITS_IN_U64;
-        let bit_index = page_index % BITS_IN_U64;
+        let byte_index = page_index / BITS_IN_BITMAP_VALUE;
+        let bit_index = page_index % BITS_IN_BITMAP_VALUE;
 
         (self.bitmap[byte_index as usize] & (1 << bit_index)) != 0
     }
 
     pub fn set_present(&mut self, page_index: usize, is_present: bool) {
-        let byte_index = page_index / BITS_IN_U64;
-        let bit_index = page_index % BITS_IN_U64;
+        let byte_index = page_index / BITS_IN_BITMAP_VALUE;
+        let bit_index = page_index % BITS_IN_BITMAP_VALUE;
 
         let val = &mut self.bitmap[byte_index as usize];
 

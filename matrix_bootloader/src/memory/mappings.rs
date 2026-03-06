@@ -1,6 +1,5 @@
 use core::fmt::Debug;
 
-use anyhow::{Result, anyhow};
 use uefi::boot::{self, PAGE_SIZE};
 use x86_64::{
     PhysAddr, VirtAddr,
@@ -12,7 +11,7 @@ use x86_64::{
 
 static UEFI_PHYS_OFFSET: u64 = 0;
 
-struct UefiPageAllocator;
+pub(crate) struct UefiPageAllocator;
 
 unsafe impl<Size: PageSize> FrameAllocator<Size> for UefiPageAllocator {
     fn allocate_frame(&mut self) -> Option<x86_64::structures::paging::PhysFrame<Size>> {
@@ -24,59 +23,6 @@ unsafe impl<Size: PageSize> FrameAllocator<Size> for UefiPageAllocator {
         .ok()
         .map(|ptr| PhysFrame::containing_address(PhysAddr::new(ptr.as_ptr() as u64)))
     }
-}
-
-pub(crate) fn map_kernel<Size: PageSize + Debug, M: Mapper<Size>>(
-    mapper: &mut M,
-    kernel_phys_start: u64,
-    kernel_size: u64,
-    new_kernel_base: u64,
-) -> Result<()> {
-    let phys_offset = kernel_phys_start % Size::SIZE;
-    let new_offset = new_kernel_base % Size::SIZE;
-
-    if kernel_phys_start % Size::SIZE != new_kernel_base % Size::SIZE {
-        return Err(anyhow!(
-            "Page offsets do not match: kernel_phys_start % SIZE = {}, new_kernel_base % SIZE = {}",
-            phys_offset,
-            new_offset
-        ));
-    }
-
-    let phys_start = PhysFrame::<Size>::containing_address(PhysAddr::new(kernel_phys_start))
-        .start_address()
-        .as_u64();
-
-    let phys_end = {
-        let frame = PhysFrame::<Size>::containing_address(PhysAddr::new(
-            kernel_phys_start + kernel_size - 1,
-        ));
-        frame.start_address().as_u64() + frame.size()
-    };
-
-    let mut offset = 0;
-
-    while phys_start + offset < phys_end {
-        let phys = phys_start + offset;
-        let virt = new_kernel_base + offset;
-
-        let frame = PhysFrame::containing_address(PhysAddr::new(phys));
-
-        let page = Page::containing_address(VirtAddr::new(virt));
-
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
-        unsafe {
-            mapper
-                .map_to(page, frame, flags, &mut UefiPageAllocator)
-                .expect("kernel mapping failed")
-                .flush();
-        }
-
-        offset += Size::SIZE;
-    }
-
-    Ok(())
 }
 
 pub(crate) fn map_physical_memory_offset<Size: PageSize + Debug>(

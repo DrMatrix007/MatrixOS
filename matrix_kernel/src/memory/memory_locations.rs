@@ -1,4 +1,0 @@
-pub const HEAP_START: u64 = 0x_4444_4444_0000;
-pub const HEAP_SIZE: u64 = 100 * 4096;
-
-pub const FRAME_ALLOC_BITMAP_LOCATION: u64 = 0x_5555_5555_0000;

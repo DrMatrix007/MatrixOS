@@ -10,7 +10,7 @@ pub mod logger;
 pub mod memory;
 pub mod memory_locations;
 pub mod panics;
-pub mod scheduling;
+pub mod processes;
 
 use log::info;
 use matrix_boot_common::boot_info::{
@@ -22,7 +22,7 @@ use x86_64::{
     structures::paging::{PageSize, Size4KiB},
 };
 
-use crate::scheduling::process::Process;
+use crate::processes::process::Process;
 
 fn get_rip() -> u64 {
     let rip: u64;
@@ -30,6 +30,15 @@ fn get_rip() -> u64 {
         core::arch::asm!("lea rax, [rip]", "mov {}, rax", out(reg) rip);
     }
     rip
+}
+
+#[inline(always)]
+fn get_rsp() -> u64 {
+    let x;
+    unsafe {
+        core::arch::asm!("mov {}, rsp", out(reg) x);
+    }
+    x
 }
 
 pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
@@ -51,12 +60,11 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
         memory::init_memory(VirtAddr::new(*phys_offset as u64), memory_map);
     }
 
-    info!("did not crash!!!");
-
     let _ = Process::new().unwrap();
 
+    info!("did not crash!!!");
+
     loop {
-        unsafe { core::arch::asm!("mov rax, 0x1b") };
         hlt();
     }
 }
@@ -64,6 +72,7 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
 fn log_boot_stuff(boot_info: &MatrixBootInfo) {
     info!("starting matrix os...");
     info!("we are runinng at 0x{:x}!", get_rip());
+    info!("we are runinng with stack at 0x{:x}!", get_rsp());
     info!("got physical offset at 0x{:x}", boot_info.phys_offset());
     info!("got args: {:#?}", boot_info);
 

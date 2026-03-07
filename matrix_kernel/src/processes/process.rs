@@ -1,20 +1,18 @@
 use anyhow::{Context, Result, anyhow};
 use x86_64::{
     VirtAddr,
-    structures::paging::{
-        FrameAllocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame, Size4KiB,
-    },
+    structures::paging::{FrameAllocator, Mapper, Page, PageTable, PageTableFlags, Size4KiB},
 };
 
 use crate::{
     memory::{PAGE_TABLE, allocator::FRAME_ALLOCATOR},
     memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
-    scheduling::trapframe::TrapFrame,
+    processes::{process_memory_manager::ProcessMemoryManager, trapframe::TrapFrame},
 };
 
 pub struct Process {
     pub trap_frame: TrapFrame,
-    pub cr3: PhysFrame<Size4KiB>,
+    pub memory_manager: ProcessMemoryManager,
 }
 
 const RECURSIVE_INDEX: usize = 510;
@@ -33,6 +31,7 @@ impl Process {
             Page::<Size4KiB>::containing_address(VirtAddr::new(PROCESS_CREATION_PAGE_MAP_BASE));
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
+
         unsafe {
             current_page_table
                 .map_to(
@@ -62,7 +61,7 @@ impl Process {
             .flush();
 
         Ok(Self {
-            cr3: new_page_table_frame,
+            memory_manager: ProcessMemoryManager::new(new_page_table_frame),
             trap_frame: TrapFrame::default(),
         })
     }

@@ -1,5 +1,6 @@
 use crate::relocatable::Relocatable;
 
+#[derive(Debug)]
 pub struct KernelStack {
     pub end_stack_ptr: *mut u8,
     pub size: u64,

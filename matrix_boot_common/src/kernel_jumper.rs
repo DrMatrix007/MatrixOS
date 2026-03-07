@@ -4,6 +4,7 @@ use crate::{
     stack::KernelStack,
 };
 
+#[derive(Debug)]
 pub struct KernelJumper {
     stack: KernelStack,
     entry: MatrixEntryPointRaw,

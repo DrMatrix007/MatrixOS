@@ -17,6 +17,7 @@ impl Relocatable for MatrixEntryPoint {
     }
 }
 
+#[derive(Debug)]
 pub struct MatrixEntryPointRaw(pub(crate) MatrixEntryPoint);
 
 impl MatrixEntryPointRaw {
@@ -67,6 +68,7 @@ impl Relocatable for MatrixBootInfo {
     }
 }
 
+#[derive(Debug)]
 pub struct BoxedMatrixBootInfo {
     info: *mut MatrixBootInfo,
 }

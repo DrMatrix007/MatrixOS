@@ -48,10 +48,12 @@ fn main() -> Status {
     let page_table = create_kernel_page_table(PHYS_OFFSET_START, &kernel, KERNEL_START).unwrap();
     info!("got memory");
 
+    let kernel_jumper = KernelJumper::new(kernel_stack, kernel.entry, boot_info);
+    info!("jumping: {:?}", kernel_jumper);
+
     _ = unsafe { boot::exit_boot_services(None) };
 
     unsafe { page_table.apply() };
 
-    let kernel_jumper = KernelJumper::new(kernel_stack, kernel.entry, boot_info);
     kernel_jumper.jump(PHYS_OFFSET_START, KERNEL_START);
 }

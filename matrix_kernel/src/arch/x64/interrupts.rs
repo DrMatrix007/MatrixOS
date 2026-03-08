@@ -1,10 +1,8 @@
 use lazy_static::lazy_static;
 use log::{error, info};
-use spin::Mutex;
-use x2apic::lapic::{LocalApic, LocalApicBuilder, TimerDivide};
+use x2apic::lapic::{LocalApicBuilder, TimerDivide};
 use x86_64::{
     VirtAddr,
-    registers::model_specific::Msr,
     structures::idt::{InterruptDescriptorTable, InterruptStackFrame},
 };
 
@@ -56,7 +54,7 @@ pub fn init_idt(phys_offset: VirtAddr) {
         .expect("we need lapic");
 
     unsafe {
-        lapic.set_timer_initial(6_250_000_0);
+        lapic.set_timer_initial(6250000);
         lapic.set_timer_divide(TimerDivide::Div16)
     };
 
@@ -66,14 +64,6 @@ pub fn init_idt(phys_offset: VirtAddr) {
 }
 
 extern "x86-interrupt" fn time_interrupt_handler(_: InterruptStackFrame) {
-    unsafe {
-        static mut COUNTER: u64 = 0;
-
-        info!("Tick: {}", COUNTER as usize);
-
-        COUNTER += 1;
-    }
-
     let mut lapic = LocalApicBuilder::new()
         .timer_vector(InterruptIndex::Timer as usize)
         .error_vector(InterruptIndex::Error as usize)

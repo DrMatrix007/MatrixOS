@@ -25,32 +25,6 @@ unsafe impl<Size: PageSize> FrameAllocator<Size> for UefiPageAllocator {
     }
 }
 
-pub(crate) fn map_physical_memory_offset<Size: PageSize + Debug>(
-    mapper: &mut impl Mapper<Size>,
-    phys_end: u64,
-    phys_offset: u64,
-) {
-    let mut addr = 0;
-
-    while addr < phys_end {
-        let frame = PhysFrame::containing_address(PhysAddr::new(addr));
-
-        let virt = phys_offset + addr;
-        let page = Page::containing_address(VirtAddr::new(virt));
-
-        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
-        unsafe {
-            mapper
-                .map_to(page, frame, flags, &mut UefiPageAllocator)
-                .expect("mapping failed")
-                .flush();
-        }
-
-        addr += Size::SIZE;
-    }
-}
-
 pub fn create_page_table() -> KernelPageTable<'static> {
     let pm4_frame: PhysFrame<Size4KiB> =
         <UefiPageAllocator as FrameAllocator<Size4KiB>>::allocate_frame(&mut UefiPageAllocator)

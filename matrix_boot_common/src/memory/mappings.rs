@@ -64,3 +64,30 @@ pub fn map_kernel_to_mapper<Size: PageSize + Debug>(
 
     Ok(())
 }
+
+pub fn map_physical_memory_offset<Size: PageSize + Debug>(
+    phys_end: u64,
+    phys_offset: u64,
+    mapper: &mut impl Mapper<Size>,
+    frame_allocator: &mut impl FrameAllocator<Size4KiB>,
+) {
+    let mut addr = 0;
+
+    while addr < phys_end {
+        let frame = PhysFrame::containing_address(PhysAddr::new(addr));
+
+        let virt = phys_offset + addr;
+        let page = Page::containing_address(VirtAddr::new(virt));
+
+        let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE | PageTableFlags::NO_CACHE;
+
+        unsafe {
+            mapper
+                .map_to(page, frame, flags, frame_allocator)
+                .expect("mapping failed")
+                .flush();
+        }
+
+        addr += Size::SIZE;
+    }
+}

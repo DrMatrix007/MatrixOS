@@ -2,7 +2,7 @@ mod mappings;
 
 use anyhow::{Context, Result, anyhow};
 use log::info;
-use matrix_boot_common::memory::mappings::map_kernel_to_mapper;
+use matrix_boot_common::memory::mappings::{map_kernel_to_mapper, map_physical_memory_offset};
 use uefi::{
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapMut, MemoryMapOwned},
@@ -11,9 +11,7 @@ use x86_64::structures::paging::{Size1GiB, Size4KiB};
 
 use crate::{
     elf_loader::loader::LoadedElf,
-    memory::mappings::{
-        KernelPageTable, UefiPageAllocator, create_page_table, map_physical_memory_offset,
-    },
+    memory::mappings::{KernelPageTable, UefiPageAllocator, create_page_table},
 };
 
 pub fn create_kernel_page_table(
@@ -48,13 +46,20 @@ pub fn create_kernel_page_table(
     info!("size of memory: 0x{:x}", phys_end);
 
     map_physical_memory_offset::<Size1GiB>(
-        kernel_page_table.page_table_mut(),
         phys_end,
         physical_offset,
+        kernel_page_table.page_table_mut(),
+        &mut UefiPageAllocator,
     );
 
     info!("mapped higher phsycial");
-    map_physical_memory_offset::<Size1GiB>(kernel_page_table.page_table_mut(), phys_end, 0);
+    map_physical_memory_offset::<Size1GiB>(
+        phys_end,
+        0,
+        kernel_page_table.page_table_mut(),
+        &mut UefiPageAllocator,
+    );
+    
     info!("mapped identity");
 
     info!("physical memory mapped");

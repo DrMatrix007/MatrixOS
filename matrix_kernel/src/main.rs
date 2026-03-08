@@ -11,6 +11,7 @@ pub mod memory;
 pub mod memory_locations;
 pub mod panics;
 pub mod processes;
+pub mod scheduler;
 
 use log::info;
 use matrix_boot_common::boot_info::{
@@ -61,10 +62,11 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
         arch::x64::init_x64(VirtAddr::new(*phys_offset));
     }
 
-    let _ = Process::new().unwrap();
-
     info!("did not crash!!!");
 
+    let _ = Process::new().unwrap();
+
+    info!("halting!");
     loop {
         hlt();
     }

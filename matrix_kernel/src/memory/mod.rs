@@ -10,6 +10,7 @@ pub mod memory_map_frame_allocator;
 pub mod once_objects;
 pub mod paging;
 pub mod silly_memory_map_frame_allocator;
+pub mod apic_mapping;
 
 pub static PAGE_TABLE: Mutex<OnceMapper<OffsetPageTable>> = Mutex::new(OnceMapper::new());
 

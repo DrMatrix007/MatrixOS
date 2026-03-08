@@ -37,18 +37,27 @@ impl Relocatable for MatrixEntryPointRaw {
 }
 
 #[repr(C)]
-#[derive(Debug)]
 pub struct MatrixBootInfo {
     pub frame_buffer: MatrixFrameBuffer,
-    pub phys_offset: *const (),
+    pub phys_offset: u64,
     pub memory_map: MatrixMemoryMap,
+}
+
+impl core::fmt::Debug for MatrixBootInfo {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        f.debug_struct("MatrixBootInfo")
+            .field("frame_buffer", &self.frame_buffer)
+            .field("phys_offset", &(self.phys_offset as *const ()))
+            .field("memory_map", &self.memory_map)
+            .finish()
+    }
 }
 
 impl MatrixBootInfo {
     pub fn new(frame_buffer: MatrixFrameBuffer, memory_map: MatrixMemoryMap) -> Self {
         Self {
             frame_buffer,
-            phys_offset: null(),
+            phys_offset: 0,
             memory_map,
         }
     }

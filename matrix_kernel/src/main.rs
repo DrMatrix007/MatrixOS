@@ -56,8 +56,9 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
     } = boot_info;
 
     unsafe {
-        arch::x64::init_x64();
-        memory::init_memory(VirtAddr::new(*phys_offset as u64), memory_map);
+        memory::init_memory(VirtAddr::new(*phys_offset), memory_map);
+        info!("working memory");
+        arch::x64::init_x64(VirtAddr::new(*phys_offset));
     }
 
     let _ = Process::new().unwrap();

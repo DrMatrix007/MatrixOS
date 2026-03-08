@@ -11,9 +11,7 @@ use x86_64::{
 };
 
 use crate::{
-    memory::{
-        once_objects::OnceAllocator, memory_map_frame_allocator::MemoryMapPageAllocator,
-    },
+    memory::{memory_map_frame_allocator::MemoryMapPageAllocator, once_objects::OnceAllocator},
     memory_locations::{HEAP_SIZE, HEAP_START},
 };
 
@@ -28,9 +26,9 @@ pub(super) fn init_heap(
     memory_map: &'static MatrixMemoryMap,
 ) -> Result<(), MapToError<Size4KiB>> {
     let mut frame_allocator = FRAME_ALLOCATOR.lock();
-    
+
     frame_allocator.init(MemoryMapPageAllocator::new(memory_map, mapper));
-    
+
     info!("mapping heap");
 
     let page_range: PageRangeInclusive<Size4KiB> = {

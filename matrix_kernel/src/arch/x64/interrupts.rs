@@ -1,20 +1,26 @@
 use lazy_static::lazy_static;
 use log::{error, info};
-use pic8259::ChainedPics;
-use x86_64::structures::idt::{InterruptDescriptorTable, InterruptStackFrame};
+use spin::Mutex;
+use x2apic::lapic::{LocalApic, LocalApicBuilder, TimerDivide};
+use x86_64::{
+    VirtAddr,
+    registers::model_specific::Msr,
+    structures::idt::{InterruptDescriptorTable, InterruptStackFrame},
+};
 
-use crate::arch::x64::gdt;
+use crate::{
+    arch::x64::gdt, memory::apic_mapping::init_apic_mappings, memory_locations::APIC_PAGE,
+};
 
 pub const PIC_1_OFFSET: u8 = 32;
 pub const PIC_2_OFFSET: u8 = PIC_1_OFFSET + 8;
-
-pub static PICS: spin::Mutex<ChainedPics> =
-    spin::Mutex::new(unsafe { ChainedPics::new(PIC_1_OFFSET, PIC_2_OFFSET) });
 
 #[derive(Debug, Clone, Copy)]
 #[repr(u8)]
 pub enum InterruptIndex {
     Timer = PIC_1_OFFSET,
+    Error,
+    Spurious,
 }
 
 lazy_static! {
@@ -36,48 +42,46 @@ lazy_static! {
     };
 }
 
-#[derive(Debug, Clone, Copy, Default)]
-pub struct InterruptNotInRagne;
+pub fn init_idt(phys_offset: VirtAddr) {
+    init_apic_mappings(phys_offset);
 
-pub fn enable_irq(pics: &mut ChainedPics, irq: InterruptIndex) -> Result<(), InterruptNotInRagne> {
-    let [mut primary, mut secondary] = unsafe { pics.read_masks() };
-
-    let irq = irq as u8 - PIC_1_OFFSET;
-
-    match irq {
-        0..=7 => {
-            primary &= !(1 << irq);
-        }
-        8..=15 => {
-            secondary &= !(1 << (irq - 8));
-        }
-        _ => return Err(InterruptNotInRagne),
-    }
-
-    unsafe { pics.write_masks(primary, secondary) };
-    Ok(())
-}
-
-pub fn init_idt() {
     IDT.load();
 
+    let mut lapic = LocalApicBuilder::new()
+        .timer_vector(InterruptIndex::Timer as usize)
+        .error_vector(InterruptIndex::Error as usize)
+        .spurious_vector(InterruptIndex::Spurious as usize)
+        .set_xapic_base(APIC_PAGE.start_address().as_u64())
+        .build()
+        .expect("we need lapic");
+
     unsafe {
-        let mut pics = PICS.lock();
-
-        pics.initialize();
-
-        enable_irq(&mut pics, InterruptIndex::Timer).unwrap();
-        info!("PIC masks after enabling IRQ0: {:?}", pics.read_masks());
+        lapic.set_timer_initial(6_250_000_0);
+        lapic.set_timer_divide(TimerDivide::Div16)
     };
+
+    unsafe { lapic.enable() };
 
     info!("finish init idt!");
 }
 
 extern "x86-interrupt" fn time_interrupt_handler(_: InterruptStackFrame) {
     unsafe {
-        PICS.lock()
-            .notify_end_of_interrupt(InterruptIndex::Timer as u8)
-    };
+        static mut COUNTER: u64 = 0;
+
+        info!("Tick: {}", COUNTER as usize);
+
+        COUNTER += 1;
+    }
+
+    let mut lapic = LocalApicBuilder::new()
+        .timer_vector(InterruptIndex::Timer as usize)
+        .error_vector(InterruptIndex::Error as usize)
+        .spurious_vector(InterruptIndex::Spurious as usize)
+        .set_xapic_base(APIC_PAGE.start_address().as_u64())
+        .build()
+        .unwrap_or_else(|err| panic!("{}", err));
+    unsafe { lapic.end_of_interrupt() };
 }
 
 extern "x86-interrupt" fn double_fault_handler(
@@ -96,7 +100,7 @@ extern "x86-interrupt" fn general_protection_fault_handler(
     error_code: u64,
 ) {
     panic!(
-        "EXCEPTION: GENERAL_PROTECTION_FAULT code: {}; {:?}",
+        "EXCEPTION: GENERAL_PROTECTION_FAULT code: {}; {:#?}",
         error_code, stack_frame
     );
 }

@@ -26,3 +26,13 @@ pub struct TrapFrame {
     rsp: u64,
     ss: u64,
 }
+
+impl TrapFrame {
+    pub fn new(rip: u64, rsp: u64) -> Self {
+        Self {
+            rip,
+            rsp,
+            ..Default::default()
+        }
+    }
+}

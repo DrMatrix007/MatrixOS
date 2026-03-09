@@ -6,15 +6,13 @@ extern crate alloc;
 
 pub mod arch;
 pub mod entry_point;
-pub mod logger;
 pub mod memory;
 pub mod memory_locations;
 pub mod panics;
-pub mod processes;
 pub mod scheduler;
 
 use log::info;
-use matrix_boot_common::boot_info::{
+use matrix_common::boot_info::{
     MatrixBootInfo, frame_buffer::MatrixPixel, memory_map::MatrixMemoryRegionKind,
 };
 use x86_64::{
@@ -23,7 +21,7 @@ use x86_64::{
     structures::paging::{PageSize, Size4KiB},
 };
 
-use crate::processes::process::Process;
+use crate::scheduler::process::Process;
 
 fn get_rip() -> u64 {
     let rip: u64;
@@ -64,7 +62,7 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
 
     info!("did not crash!!!");
 
-    let _ = Process::new().unwrap();
+    let _ = Process::new(||{}).unwrap();
 
     info!("halting!");
     loop {

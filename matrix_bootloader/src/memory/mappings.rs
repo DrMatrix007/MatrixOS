@@ -1,11 +1,8 @@
-use core::fmt::Debug;
-
 use uefi::boot::{self, PAGE_SIZE};
 use x86_64::{
     PhysAddr, VirtAddr,
     structures::paging::{
-        FrameAllocator, Mapper, OffsetPageTable, Page, PageSize, PageTable, PageTableFlags,
-        PhysFrame, Size4KiB,
+        FrameAllocator, OffsetPageTable, PageSize, PageTable, PhysFrame, Size4KiB,
     },
 };
 

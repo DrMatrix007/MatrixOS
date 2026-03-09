@@ -1,11 +1,10 @@
 use alloc::{collections::btree_set::BTreeSet, vec::Vec};
-use log::info;
 use x86_64::{
     VirtAddr,
     structures::paging::{FrameAllocator, Page, PhysFrame, Size4KiB},
 };
 
-use crate::{memory::allocator::FRAME_ALLOCATOR, processes::process_memory_manager::vads::Vad};
+use crate::{memory::allocator::FRAME_ALLOCATOR, scheduler::process_memory_manager::vads::Vad};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AllocationError {

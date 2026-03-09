@@ -3,7 +3,7 @@ use core::slice;
 use alloc::vec::Vec;
 use anyhow::{Context, Ok, Result};
 use log::info;
-use matrix_boot_common::boot_info::{
+use matrix_common::boot_info::{
     BoxedMatrixBootInfo, MatrixBootInfo,
     frame_buffer::{MatrixFrameBuffer, MatrixPixel},
     memory_map::{MatrixMemoryMap, MatrixMemoryRegion, MatrixMemoryRegionKind},

@@ -12,7 +12,7 @@ pub mod protocols;
 
 use anyhow::Context;
 use log::info;
-use matrix_boot_common::kernel_jumper::KernelJumper;
+use matrix_common::kernel_jumper::KernelJumper;
 use uefi::{
     Status,
     boot::{self},

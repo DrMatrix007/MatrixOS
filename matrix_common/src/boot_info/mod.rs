@@ -1,5 +1,3 @@
-use core::ptr::null;
-
 use crate::{
     boot_info::frame_buffer::MatrixFrameBuffer, boot_info::memory_map::MatrixMemoryMap,
     relocatable::Relocatable,

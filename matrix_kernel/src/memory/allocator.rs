@@ -1,6 +1,6 @@
 use linked_list_allocator::LockedHeap;
 use log::info;
-use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
+use matrix_common::boot_info::memory_map::MatrixMemoryMap;
 use spin::mutex::SpinMutex;
 use x86_64::{
     VirtAddr,

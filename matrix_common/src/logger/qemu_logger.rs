@@ -42,7 +42,7 @@ impl Log for BasicQemuLogger {
             if self.enabled(record.metadata()) {
                 let _ = writeln!(
                     unsafe { &mut *self.0.get() },
-                    "[ {}]: {}:{}: {}",
+                    "[{}]: {}:{}: {}",
                     record.level(),
                     record.file().unwrap_or("NO_FILE"),
                     record.line().unwrap_or(0),
@@ -60,7 +60,7 @@ lazy_static! {
         BasicQemuLogger(UnsafeCell::new(BasicQemuSerialWriter::new()));
 }
 
-pub fn init_basic_logger() {
+pub fn init_qemu_logger() {
     log::set_logger(&*LOGGER).expect("failed to init logger");
     log::set_max_level(log::LevelFilter::Info);
 }

@@ -1,4 +1,4 @@
-use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
+use matrix_common::boot_info::memory_map::MatrixMemoryMap;
 use x86_64::VirtAddr;
 use x86_64::structures::paging::FrameDeallocator;
 use x86_64::structures::paging::Page;

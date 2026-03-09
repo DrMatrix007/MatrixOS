@@ -1,5 +1,5 @@
 use log::info;
-use matrix_boot_common::boot_info::memory_map::MatrixMemoryMap;
+use matrix_common::boot_info::memory_map::MatrixMemoryMap;
 use spin::Mutex;
 use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 

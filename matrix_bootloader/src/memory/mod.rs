@@ -2,7 +2,7 @@ mod mappings;
 
 use anyhow::{Context, Result, anyhow};
 use log::info;
-use matrix_boot_common::memory::mappings::{map_kernel_to_mapper, map_physical_memory_offset};
+use matrix_common::memory::mappings::{map_kernel_to_mapper, map_physical_memory_offset};
 use uefi::{
     boot::{MemoryType, PAGE_SIZE, memory_map},
     mem::memory_map::{MemoryMap, MemoryMapMut, MemoryMapOwned},

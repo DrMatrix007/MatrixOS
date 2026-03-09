@@ -62,6 +62,10 @@ impl<M> OnceMapper<M> {
     pub fn inner(&self) -> &M {
         self.mapper.as_ref().expect("empty mapper for `inner`")
     }
+
+    pub fn inner_mut(&mut self) -> &mut M {
+        self.mapper.as_mut().expect("empty mapper for `inner`")
+    }
 }
 
 impl<M: Mapper<Size>, Size: PageSize> Mapper<Size> for OnceMapper<M> {

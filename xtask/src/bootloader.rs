@@ -1,28 +1,18 @@
 use anyhow::Result;
 use std::path::Path;
 
-use crate::{
-    builder::{BuildConfiguration, BuildOptions, build_project},
-    clippy::run_clippy,
-    project::Project,
-};
+use crate::project::NamedProject;
 
-static BOOTLOADER_PACKAGE_NAME: &str = "matrix_bootloader";
-static BOOTLAODER_TARGET: &str = "x86_64-unknown-uefi";
 static BOOTLOADER_PATH: &str = "EFI/BOOT/BOOTX64.EFI";
 
 #[derive(Debug, Clone, Copy, Default)]
 pub struct BootloaderProject;
 
-impl Project for BootloaderProject {
-    fn build(&self, configuration: BuildConfiguration) -> Result<std::path::PathBuf> {
-        println!("    🥾  Building Bootloader in {} mode", configuration);
-        build_project(BuildOptions {
-            package: BOOTLOADER_PACKAGE_NAME,
-            target: BOOTLAODER_TARGET,
-            configuration,
-        })
-    }
+impl NamedProject for BootloaderProject {
+    const PACKAGE_NAME: &str = "matrix_bootloader";
+    const TARGET: &str = "x86_64-unknown-uefi";
+
+    const IMOJI: &str = "🥾";
 
     fn build_image_artifact(&self, esp: &Path, binary: &Path, workspace_root: &Path) -> Result<()> {
         let boot = esp.join(BOOTLOADER_PATH);
@@ -36,9 +26,5 @@ impl Project for BootloaderProject {
         );
 
         Ok(())
-    }
-
-    fn clippy(&self) -> Result<()> {
-        run_clippy(BOOTLOADER_PACKAGE_NAME, BOOTLAODER_TARGET)
     }
 }

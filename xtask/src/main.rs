@@ -1,6 +1,7 @@
 mod bootloader;
 mod builder;
 pub mod clippy;
+pub mod elf_loader;
 mod kernel;
 pub mod project;
 mod qemu;
@@ -15,8 +16,8 @@ use cargo_metadata::MetadataCommand;
 use clap::{Parser, Subcommand};
 
 use crate::{
-    bootloader::BootloaderProject, builder::BuildConfiguration, kernel::KernelProject,
-    project::Project, qemu::run_qemu,
+    bootloader::BootloaderProject, builder::BuildConfiguration, elf_loader::ElfLoaderProject,
+    kernel::KernelProject, project::Project, qemu::run_qemu,
 };
 
 #[derive(Parser)]
@@ -37,15 +38,23 @@ enum Commands {
 }
 
 pub struct Workspace {
-    pub bootloader: BootloaderProject,
-    pub kernel: KernelProject,
+    pub projects: Vec<Box<dyn Project>>,
+}
+
+impl Workspace {
+    pub fn new(all_projects: impl IntoIterator<Item = Box<dyn Project>>) -> Self {
+        Self {
+            projects: all_projects.into_iter().collect(),
+        }
+    }
 }
 
 fn main() -> Result<()> {
-    let workspace = Workspace {
-        bootloader: BootloaderProject,
-        kernel: KernelProject,
-    };
+    let workspace = Workspace::new([
+        Box::new(KernelProject) as Box<dyn Project>,
+        Box::new(BootloaderProject),
+        Box::new(ElfLoaderProject),
+    ]);
 
     let cli = Cli::parse();
 
@@ -53,7 +62,7 @@ fn main() -> Result<()> {
 
     match cli.command {
         Commands::Build => {
-            build_projects(&workspace, build_configuration)?;
+            build_workspace(&workspace, build_configuration)?;
         }
         Commands::Clean => {
             clean_workspace()?;
@@ -70,8 +79,9 @@ fn main() -> Result<()> {
 }
 
 fn clippy_workspace(workspace: Workspace) -> Result<()> {
-    workspace.bootloader.clippy()?;
-    workspace.kernel.clippy()?;
+    for project in workspace.projects {
+        project.clippy()?;
+    }
 
     Ok(())
 }
@@ -80,21 +90,17 @@ fn run_workspace(
     workspace: Workspace,
     build_configuration: BuildConfiguration,
 ) -> Result<(), anyhow::Error> {
-    let (bootloader, kernel) =
-        build_projects(&workspace, build_configuration).context("building projects for image")?;
+    let paths =
+        build_workspace(&workspace, build_configuration).context("building projects for image")?;
 
     let workspace_root = get_workspace_root();
     let mut esp = get_target_dir().context("getting target dir for image")?;
-
     esp.push(format!("{}/esp/", build_configuration));
-    workspace
-        .bootloader
-        .build_image_artifact(&esp, &bootloader, &workspace_root)
-        .context("building bootloader artifact")?;
-    workspace
-        .kernel
-        .build_image_artifact(&esp, &kernel, &workspace_root)
-        .context("builing kernel artifact")?;
+
+    for (path, project) in core::iter::zip(paths, workspace.projects) {
+        project.build_image_artifact(&esp, &path, &workspace_root)?;
+    }
+
     let mut ovmf_root = workspace_root.clone();
     ovmf_root.push("ovmf");
 
@@ -103,14 +109,15 @@ fn run_workspace(
     Ok(())
 }
 
-fn build_projects(
-    workspace: &Workspace,
-    configuration: BuildConfiguration,
-) -> Result<(PathBuf, PathBuf), anyhow::Error> {
-    let boot_bath = workspace.bootloader.build(configuration)?;
-    let kernel_path = workspace.kernel.build(configuration)?;
-
-    Ok((boot_bath, kernel_path))
+fn build_workspace(workspace: &Workspace, config: BuildConfiguration) -> Result<Vec<PathBuf>> {
+    workspace
+        .projects
+        .iter()
+        .map(|x| {
+            x.build(config)
+                .with_context(|| format!("building project {}", x.name()))
+        })
+        .collect()
 }
 
 fn clean_workspace() -> Result<()> {

@@ -1,5 +1,5 @@
 use anyhow::{Context, Result};
-use matrix_boot_common::stack::KernelStack;
+use matrix_common::stack::KernelStack;
 use uefi::boot::PAGE_SIZE;
 
 pub const KERNEL_STACK_SIZE: usize = PAGE_SIZE * 20;

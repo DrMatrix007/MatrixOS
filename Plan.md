@@ -1,0 +1,9 @@
+- [V] basic bootlaoder
+- [V] basic runnign kernel in qemu
+- [V] basic interrupts
+- [V] basic memory
+- [V] doing basic stuff with pagetables
+- [] simple filesystem
+- [] elf loader
+- [] basic syscalls (linux-like)
+- [] processes

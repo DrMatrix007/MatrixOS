@@ -2,3 +2,4 @@
 - [ ] page table
 - [x] stack
 - [ ] program to run
+- [ ] vads (of some kind)

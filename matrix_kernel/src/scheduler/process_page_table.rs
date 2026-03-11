@@ -3,12 +3,13 @@ use anyhow::{Context, Result, anyhow};
 use x86_64::{
     VirtAddr,
     structures::paging::{
-        FrameAllocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame, Size4KiB,
+        FrameAllocator, FrameDeallocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame,
+        Size4KiB,
     },
 };
 
 use crate::{
-    memory::{PAGE_TABLE, allocator::FRAME_ALLOCATOR},
+    memory::{PAGE_TABLE, allocator::KernelFrameAllocator},
     memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
 };
 
@@ -18,8 +19,7 @@ pub struct ProcessPageTable {
 
 impl ProcessPageTable {
     pub fn new(m: &mut impl Mapper<Size4KiB>) -> Result<Self> {
-        let mut frame_allocator = FRAME_ALLOCATOR.lock();
-        let mut current_page_table = PAGE_TABLE.lock();
+        let mut frame_allocator = KernelFrameAllocator;
 
         let new_page_table_frame = frame_allocator
             .allocate_frame()
@@ -29,23 +29,19 @@ impl ProcessPageTable {
             page_table_frame: new_page_table_frame,
         };
 
-        let page_table = this.map_self(
-            PROCESS_CREATION_PAGE_MAP_BASE,
-            &mut *current_page_table,
-            &mut *frame_allocator,
-        )?;
+        let page_table = this.map_self(PROCESS_CREATION_PAGE_MAP_BASE, m, &mut frame_allocator)?;
 
         *page_table = PageTable::new();
 
-        this.unmap_self(&mut *current_page_table, page_table)?;
+        this.unmap_self(m, page_table)?;
 
-        Ok()
+        Ok(this)
     }
 }
 
 impl Drop for ProcessPageTable {
     fn drop(&mut self) {
-        
+        unsafe { KernelFrameAllocator.deallocate_frame(self.page_table_frame) };
     }
 }
 

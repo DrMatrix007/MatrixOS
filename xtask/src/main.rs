@@ -1,7 +1,6 @@
 mod bootloader;
 mod builder;
 pub mod clippy;
-pub mod elf_loader;
 mod kernel;
 pub mod project;
 mod qemu;
@@ -16,8 +15,8 @@ use cargo_metadata::MetadataCommand;
 use clap::{Parser, Subcommand};
 
 use crate::{
-    bootloader::BootloaderProject, builder::BuildConfiguration, elf_loader::ElfLoaderProject,
-    kernel::KernelProject, project::Project, qemu::run_qemu,
+    bootloader::BootloaderProject, builder::BuildConfiguration, kernel::KernelProject,
+    project::Project, qemu::run_qemu,
 };
 
 #[derive(Parser)]
@@ -51,10 +50,9 @@ impl Workspace {
 
 fn main() -> Result<()> {
     let workspace = Workspace::new([
-        Box::new(KernelProject) as Box<dyn Project>,
         Box::new(BootloaderProject),
-        Box::new(ElfLoaderProject),
-    ]);
+        Box::new(KernelProject),
+    ] as [Box<dyn Project>; _]);
 
     let cli = Cli::parse();
 
@@ -90,17 +88,11 @@ fn run_workspace(
     workspace: Workspace,
     build_configuration: BuildConfiguration,
 ) -> Result<(), anyhow::Error> {
-    let paths =
-        build_workspace(&workspace, build_configuration).context("building projects for image")?;
+    build_workspace(&workspace, build_configuration).context("building projects for image")?;
 
     let workspace_root = get_workspace_root();
     let mut esp = get_target_dir().context("getting target dir for image")?;
     esp.push(format!("{}/esp/", build_configuration));
-
-    for (path, project) in core::iter::zip(paths, workspace.projects) {
-        project.build_image_artifact(&esp, &path, &workspace_root)?;
-    }
-
     let mut ovmf_root = workspace_root.clone();
     ovmf_root.push("ovmf");
 
@@ -109,15 +101,21 @@ fn run_workspace(
     Ok(())
 }
 
-fn build_workspace(workspace: &Workspace, config: BuildConfiguration) -> Result<Vec<PathBuf>> {
-    workspace
-        .projects
-        .iter()
-        .map(|x| {
-            x.build(config)
-                .with_context(|| format!("building project {}", x.name()))
-        })
-        .collect()
+fn build_workspace(workspace: &Workspace, config: BuildConfiguration) -> Result<()> {
+    let mut esp = get_target_dir().context("getting target dir for image")?;
+    esp.push(format!("{}/esp/", config));
+    let workspace_root = get_workspace_root();
+
+    std::fs::create_dir_all(&esp)?;
+
+    for x in &workspace.projects {
+        let bin = x
+            .build(config)
+            .with_context(|| format!("building project {}", x.name()))?;
+        x.build_image_artifact(&esp, &bin, &workspace_root)?
+    }
+
+    Ok(())
 }
 
 fn clean_workspace() -> Result<()> {

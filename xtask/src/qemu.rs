@@ -10,7 +10,7 @@ pub fn run_qemu(ovmf_root: &Path, esp_path: &Path) -> Result<()> {
             ovmf_root.display()
         ))
         .arg("-drive")
-        .arg(format!("format=raw,file=fat:rw:{}", esp_path.display()))
+        .arg(format!("if=floppy,format=raw,file=fat:rw:{}", esp_path.display()))
         .arg("-net")
         .arg("none")
         .args(["-serial", "stdio"])

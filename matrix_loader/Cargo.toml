@@ -1,7 +1,0 @@
-[package]
-name = "matrix_loader"
-version = "0.1.0"
-edition = "2024"
-
-[dependencies]
-matrix_common = { path = "../matrix_common"}

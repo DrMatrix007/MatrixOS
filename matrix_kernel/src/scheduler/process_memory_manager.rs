@@ -1,10 +1,18 @@
 use alloc::{collections::btree_set::BTreeSet, vec::Vec};
+use anyhow::{Context, Result, anyhow};
 use x86_64::{
     VirtAddr,
-    structures::paging::{FrameAllocator, Page, PhysFrame, Size4KiB},
+    structures::paging::{
+        FrameAllocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame, Size4KiB,
+        mapper::CleanUp,
+    },
 };
 
-use crate::{memory::allocator::FRAME_ALLOCATOR, scheduler::process_memory_manager::vads::Vad};
+use crate::{
+    memory::{PAGE_TABLE, allocator::FRAME_ALLOCATOR},
+    memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
+    scheduler::{process_memory_manager::vads::Vad, process_page_table::ProcessPageTable},
+};
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 pub enum AllocationError {
@@ -13,19 +21,43 @@ pub enum AllocationError {
 }
 
 pub struct ProcessMemoryManager {
-    page_table_frame: PhysFrame<Size4KiB>,
+    page_table: ProcessPageTable,
     frames_owned: BTreeSet<Vad>,
 }
 
 impl ProcessMemoryManager {
-    pub fn new(page_table_frame: PhysFrame<Size4KiB>) -> Self {
-        Self {
+    pub fn new(page_table_frame: PhysFrame<Size4KiB>) -> Result<Self> {
+       
+         let new_page_table =
+            unsafe { &mut *(new_page_table_page.start_address().as_mut_ptr() as *mut PageTable) };
+
+        *new_page_table = PageTable::new();
+
+        current_page_table
+            .unmap(new_page_table_page)
+            .map_err(|x| anyhow!("{:?}", x))
+            .context("unmapping the temp page table")?
+            .1
+            .flush();
+
+        unsafe {
+            current_page_table
+                .inner_mut()
+                .clean_up(&mut *frame_allocator)
+        };
+
+        Ok(Self {
             page_table_frame,
             frames_owned: Default::default(),
-        }
+        })
     }
 
-    pub fn allocate_memory(&mut self, start: VirtAddr, size: u64) -> Result<&Vad, AllocationError> {
+    pub fn allocate_memory(
+        &mut self,
+        start: VirtAddr,
+        size: u64,
+        flags: PageTableFlags,
+    ) -> Result<&Vad, AllocationError> {
         let end = start + size;
 
         let mut closest_frames = self.frames_owned.iter().filter(|x| {
@@ -53,9 +85,11 @@ impl ProcessMemoryManager {
 
         let frames = core::iter::repeat_with(|| frame_allocator.allocate_frame())
             .take(pages.len() as _)
-            .collect::<Option<Vec<_>>>();
+            .collect::<Option<Vec<_>>>(); // TODO: handle failed allocation
 
         if let Some(frames) = frames {
+            for (page, frame) in core::iter::zip(pages, &frames) {}
+
             let vad = Vad { pages, frames };
             let key = vad.pages.start;
 

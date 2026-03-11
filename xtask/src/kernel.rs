@@ -15,6 +15,8 @@ impl NamedProject for KernelProject {
 
     fn build_image_artifact(&self, esp: &Path, binary: &Path, workspace_root: &Path) -> Result<()> {
         std::fs::copy(binary, esp.join(KERNEL_PATH))?;
+        std::fs::write(esp.join("file.txt"), "lets fucking goooo")?;
+        
         println!(
             "    📂 Binary copied {} to {}",
             binary.strip_prefix(workspace_root)?.display(),

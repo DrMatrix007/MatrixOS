@@ -13,6 +13,12 @@ use crate::{
     scheduler::trapframe::TrapFrame,
 };
 
+// TODO: find a better fucking way to store the loader
+// #[cfg(debug_assertions)]
+// static LOADER: &[u8] = include_bytes!("../../../target/debug/esp/loader.mat");
+// #[cfg(not(debug_assertions))]
+// static LOADER: &[u8] = include_bytes!("../../../target/release/esp/loader.mat");
+
 pub struct Process {
     pub trap_frame: TrapFrame,
     pub memory_manager: ProcessMemoryManager,
@@ -20,63 +26,28 @@ pub struct Process {
 }
 
 impl Process {
-    pub fn new(f: fn()) -> Result<Self> {
+    pub fn new() -> Result<Self> {
         let mut res = {
-            let mut frame_allocator = FRAME_ALLOCATOR.lock();
-            let mut current_page_table = PAGE_TABLE.lock();
-
-            let new_page_table_frame = frame_allocator
-                .allocate_frame()
-                .context("allocating frame for the new process's pagetable")?;
-
-            let new_page_table_page =
-                Page::<Size4KiB>::containing_address(VirtAddr::new(PROCESS_CREATION_PAGE_MAP_BASE));
-
-            let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
-
-            unsafe {
-                current_page_table
-                    .map_to(
-                        new_page_table_page,
-                        new_page_table_frame,
-                        flags,
-                        &mut *frame_allocator,
-                    )
-                    .unwrap()
-                    .flush();
-            };
-
-            let new_page_table = unsafe {
-                &mut *(new_page_table_page.start_address().as_mut_ptr() as *mut PageTable)
-            };
-
-            *new_page_table = PageTable::new();
-
-            current_page_table
-                .unmap(new_page_table_page)
-                .map_err(|x| anyhow!("{:?}", x))
-                .context("unmapping the temp page table")?
-                .1
-                .flush();
-
-            unsafe {
-                current_page_table
-                    .inner_mut()
-                    .clean_up(&mut *frame_allocator)
-            };
-
             Self {
                 rsp: 0,
-                memory_manager: ProcessMemoryManager::new(new_page_table_frame),
+                memory_manager: ProcessMemoryManager::new(),
                 trap_frame: TrapFrame::default(),
             }
         };
 
-        let _ = res
+        let stack = res
             .memory_manager
-            .allocate_memory(VirtAddr::new(0x2000000), 64 * 0x1000)
+            .allocate_memory(
+                VirtAddr::new(0x2000000),
+                64 * 0x1000,
+                PageTableFlags::USER_ACCESSIBLE
+                    | PageTableFlags::PRESENT
+                    | PageTableFlags::WRITABLE,
+            )
             .map_err(|x| anyhow!("{:?}", x))
             .context("allocating stack")?;
+
+        res.rsp = ((stack.pages.end + 1).start_address()).as_u64();
 
         Ok(res)
     }

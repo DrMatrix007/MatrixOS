@@ -62,7 +62,7 @@ pub fn kernel_entry(boot_info: &'static mut MatrixBootInfo) -> ! {
 
     info!("did not crash!!!");
 
-    let _ = Process::new(||{}).unwrap();
+    let _ = Process::new().unwrap();
 
     info!("halting!");
     loop {

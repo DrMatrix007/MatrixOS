@@ -5,8 +5,8 @@ use spin::mutex::SpinMutex;
 use x86_64::{
     VirtAddr,
     structures::paging::{
-        FrameAllocator, Mapper, Page, PageTableFlags, Size4KiB, mapper::MapToError,
-        page::PageRangeInclusive,
+        FrameAllocator, FrameDeallocator, Mapper, Page, PageTableFlags, Size4KiB,
+        mapper::MapToError, page::PageRangeInclusive,
     },
 };
 
@@ -18,7 +18,7 @@ use crate::{
 #[global_allocator]
 static ALLOCATOR: LockedHeap = LockedHeap::empty();
 
-pub static FRAME_ALLOCATOR: SpinMutex<OnceAllocator<MemoryMapPageAllocator, Size4KiB>> =
+static FRAME_ALLOCATOR: SpinMutex<OnceAllocator<MemoryMapPageAllocator, Size4KiB>> =
     SpinMutex::new(OnceAllocator::new());
 
 pub(super) fn init_heap(
@@ -55,4 +55,18 @@ pub(super) fn init_heap(
     unsafe { ALLOCATOR.lock().init(HEAP_START as _, HEAP_SIZE as _) };
 
     Ok(())
+}
+
+pub struct KernelFrameAllocator;
+
+unsafe impl FrameAllocator<Size4KiB> for KernelFrameAllocator {
+    fn allocate_frame(&mut self) -> Option<x86_64::structures::paging::PhysFrame<Size4KiB>> {
+        FRAME_ALLOCATOR.lock().allocate_frame()
+    }
+}
+
+impl FrameDeallocator<Size4KiB> for KernelFrameAllocator {
+    unsafe fn deallocate_frame(&mut self, frame: x86_64::structures::paging::PhysFrame<Size4KiB>) {
+        unsafe { FRAME_ALLOCATOR.lock().deallocate_frame(frame) }
+    }
 }

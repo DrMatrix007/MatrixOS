@@ -61,17 +61,14 @@ pub fn build_project(opts: BuildOptions) -> Result<PathBuf> {
 
     for message in Message::parse_stream(reader) {
         match message? {
-            Message::CompilerArtifact(artifact) => {
+            Message::CompilerArtifact(artifact)
                 if artifact.target.name == opts.package
-                    && artifact.target.kind.contains(&"bin".to_string())
-                {
-                    artifact_path = Some(PathBuf::from(artifact.filenames[0].clone()));
-                }
+                    && artifact.target.kind.contains(&"bin".to_string()) =>
+            {
+                artifact_path = Some(PathBuf::from(artifact.filenames[0].clone()));
             }
-            Message::BuildFinished(finished) => {
-                if !finished.success {
-                    return Err(anyhow!("Cargo build finished with errors"));
-                }
+            Message::BuildFinished(finished) if !finished.success => {
+                return Err(anyhow!("Cargo build finished with errors"));
             }
             _ => (),
         }

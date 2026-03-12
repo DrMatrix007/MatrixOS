@@ -1,15 +1,17 @@
+use core::ops::{Deref, DerefMut};
+
 use alloc::format;
 use anyhow::{Context, Result, anyhow};
 use x86_64::{
     VirtAddr,
     structures::paging::{
-        FrameAllocator, FrameDeallocator, Mapper, Page, PageTable, PageTableFlags, PhysFrame,
-        Size4KiB,
+        FrameAllocator, FrameDeallocator, Mapper, OffsetPageTable, Page, PageTable, PageTableFlags,
+        PhysFrame, Size4KiB,
     },
 };
 
 use crate::{
-    memory::{PAGE_TABLE, allocator::KernelFrameAllocator},
+    memory::{allocator::KernelFrameAllocator, paging::KernelMapper},
     memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
 };
 
@@ -18,7 +20,7 @@ pub struct ProcessPageTable {
 }
 
 impl ProcessPageTable {
-    pub fn new(m: &mut impl Mapper<Size4KiB>) -> Result<Self> {
+    pub fn new(current_mapper: &mut impl KernelMapper<Size4KiB>) -> Result<Self> {
         let mut frame_allocator = KernelFrameAllocator;
 
         let new_page_table_frame = frame_allocator
@@ -28,12 +30,16 @@ impl ProcessPageTable {
         let this = Self {
             page_table_frame: new_page_table_frame,
         };
+        {
+            let phys_offset = current_mapper.phys_offset();
+            let mut page_table = this.map_self(
+                PROCESS_CREATION_PAGE_MAP_BASE,
+                current_mapper,
+                &mut frame_allocator,
+            )?;
 
-        let page_table = this.map_self(PROCESS_CREATION_PAGE_MAP_BASE, m, &mut frame_allocator)?;
-
-        *page_table = PageTable::new();
-
-        this.unmap_self(m, page_table)?;
+            let _page_table = unsafe { OffsetPageTable::new(&mut *page_table, phys_offset) };
+        }
 
         Ok(this)
     }
@@ -46,13 +52,12 @@ impl Drop for ProcessPageTable {
 }
 
 impl ProcessPageTable {
-    pub fn map_self<'a>(
-        &'a self,
-        virt_address: VirtAddr,
-        m: &mut impl Mapper<Size4KiB>,
+    pub fn map_self<'a, 'b>(
+        &'b self,
+        m: &'a mut impl Mapper<Size4KiB>,
         frame_allocator: &mut impl FrameAllocator<Size4KiB>,
-    ) -> Result<&'a mut PageTable> {
-        let new_page_table_page = Page::<Size4KiB>::containing_address(virt_address);
+    ) -> Result<ScopedPageTableMapping<'a, 'b>> {
+        let new_page_table_page = Page::<Size4KiB>::containing_address(PROCESS_CREATION_PAGE_MAP_BASE);
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
@@ -73,14 +78,47 @@ impl ProcessPageTable {
             .flush();
         };
 
-        Ok(unsafe { &mut *new_page_table_page.start_address().as_mut_ptr() })
-    }
+        let page_table = unsafe { &mut *new_page_table_page.start_address().as_mut_ptr() };
 
-    pub fn unmap_self<'a>(
-        &'a self,
-        mapper: &mut impl Mapper<Size4KiB>,
-        page_table: &'a mut PageTable,
-    ) -> Result<()> {
-        Ok(())
+        Ok(ScopedPageTableMapping::new(m, page_table))
+    }
+}
+
+pub struct ScopedPageTableMapping<'a, 'b> {
+    mapper: &'a mut dyn Mapper<Size4KiB>,
+    page_table: &'b mut PageTable,
+}
+
+impl<'a, 'b> Drop for ScopedPageTableMapping<'a, 'b> {
+    fn drop(&mut self) {
+        let page_table_page = Page::<Size4KiB>::containing_address(VirtAddr::new(
+            self.page_table as *mut PageTable as u64,
+        ));
+
+        let res = self.mapper.unmap(page_table_page);
+
+        if let Err(err) = res {
+            panic!("fails to unmap page! {:?}", err);
+        }
+    }
+}
+
+impl<'a, 'b> ScopedPageTableMapping<'a, 'b> {
+    pub fn new(mapper: &'a mut dyn Mapper<Size4KiB>, page_table: &'b mut PageTable) -> Self {
+        Self { mapper, page_table }
+    }
+}
+
+impl<'a, 'b> Deref for ScopedPageTableMapping<'a, 'b> {
+    type Target = PageTable;
+
+    fn deref(&self) -> &Self::Target {
+        self.page_table
+    }
+}
+
+impl<'a, 'b> DerefMut for ScopedPageTableMapping<'a, 'b> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        self.page_table
     }
 }

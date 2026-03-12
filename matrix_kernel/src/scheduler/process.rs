@@ -1,16 +1,8 @@
 use anyhow::{Context, Result, anyhow};
-use x86_64::{
-    VirtAddr,
-    structures::paging::{
-        FrameAllocator, Mapper, Page, PageTable, PageTableFlags, Size4KiB, mapper::CleanUp,
-    },
-};
+use x86_64::{VirtAddr, structures::paging::PageTableFlags};
 
 use crate::{
-    memory::{PAGE_TABLE, allocator::FRAME_ALLOCATOR},
-    memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
-    scheduler::process_memory_manager::ProcessMemoryManager,
-    scheduler::trapframe::TrapFrame,
+    scheduler::process_memory_manager::ProcessMemoryManager, scheduler::trapframe::TrapFrame,
 };
 
 // TODO: find a better fucking way to store the loader
@@ -30,7 +22,8 @@ impl Process {
         let mut res = {
             Self {
                 rsp: 0,
-                memory_manager: ProcessMemoryManager::new(),
+                memory_manager: ProcessMemoryManager::new()
+                    .context("creating the process memory manager for the process")?,
                 trap_frame: TrapFrame::default(),
             }
         };

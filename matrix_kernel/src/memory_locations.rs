@@ -3,10 +3,10 @@ use x86_64::{
     structures::paging::{Page, PhysFrame},
 };
 
-pub const HEAP_START: u64 = 0xffff_8444_4444_0000;
+pub const HEAP_START: u64 = 0x0000_0444_4444_0000;
 pub const HEAP_SIZE: u64 = 1000 * 4096;
 
-pub const FRAME_ALLOC_BITMAP_LOCATION: u64 = 0xffff_8555_5555_0000;
+pub const FRAME_ALLOC_BITMAP_LOCATION: u64 = 0x0000_0555_5555_0000;
 
 pub const PROCESS_CREATION_PAGE_MAP_BASE: VirtAddr = VirtAddr::new(0x1111_1111_0000);
 

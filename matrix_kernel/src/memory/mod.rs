@@ -3,16 +3,18 @@ use matrix_common::boot_info::memory_map::MatrixMemoryMap;
 use spin::Mutex;
 use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
 
-use crate::memory::{allocator::init_heap, once_objects::OnceMapper, paging::get_page_table};
+use crate::memory::{
+    allocator::init_heap,
+    once_objects::OnceMapper,
+    paging::{get_page_table, init_paging},
+};
 
 pub mod allocator;
+pub mod apic_mapping;
 pub mod memory_map_frame_allocator;
 pub mod once_objects;
 pub mod paging;
 pub mod silly_memory_map_frame_allocator;
-pub mod apic_mapping;
-
-pub static PAGE_TABLE: Mutex<OnceMapper<OffsetPageTable>> = Mutex::new(OnceMapper::new());
 
 /// # Safety
 ///
@@ -28,5 +30,5 @@ pub unsafe fn init_memory(physical_memory_offset: VirtAddr, memory_map: &'static
 
     init_heap(&mut page_table, memory_map).unwrap();
 
-    PAGE_TABLE.lock().init(page_table);
+    init_paging(page_table);
 }

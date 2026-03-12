@@ -6,8 +6,7 @@ use x86_64::{
 };
 
 use crate::{
-    memory::{PAGE_TABLE, allocator::KernelFrameAllocator},
-    scheduler::{process_memory_manager::vads::Vad, process_page_table::ProcessPageTable},
+    memory::{allocator::KernelFrameAllocator, paging::PAGE_TABLE}, memory_locations::PROCESS_CREATION_PAGE_MAP_BASE, scheduler::{process_memory_manager::vads::Vad, process_page_table::ProcessPageTable}
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -56,7 +55,6 @@ impl ProcessMemoryManager {
             return Err(AllocationError::AlreadyTaken);
         }
 
-
         let pages = Page::range_inclusive(
             Page::containing_address(start),
             Page::containing_address(end),
@@ -67,12 +65,9 @@ impl ProcessMemoryManager {
             .collect::<Option<Vec<_>>>(); // TODO: handle failed allocation
 
         if let Some(frames) = frames {
+            self.page_table.map_self(, &mut KernelFrameAllocator);
 
-             
-
-            for (page, frame) in core::iter::zip(pages, &frames) {
-
-            }
+            for (page, frame) in core::iter::zip(pages, &frames) {}
 
             let vad = Vad { pages, frames };
             let key = vad.pages.start;

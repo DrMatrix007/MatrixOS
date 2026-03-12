@@ -1,12 +1,12 @@
 use log::info;
 use matrix_common::boot_info::memory_map::MatrixMemoryMap;
 use spin::Mutex;
-use x86_64::{VirtAddr, structures::paging::OffsetPageTable};
+use x86_64::{VirtAddr, registers::control::Cr3, structures::paging::OffsetPageTable};
 
 use crate::memory::{
     allocator::init_heap,
     once_objects::OnceMapper,
-    paging::{get_page_table, init_paging},
+    paging::{KernelPageTable, get_page_table, init_paging},
 };
 
 pub mod allocator;
@@ -23,7 +23,10 @@ pub mod silly_memory_map_frame_allocator;
 pub unsafe fn init_memory(physical_memory_offset: VirtAddr, memory_map: &'static MatrixMemoryMap) {
     let mut page_table = unsafe {
         let level_4_table = get_page_table(physical_memory_offset);
-        OffsetPageTable::new(level_4_table, physical_memory_offset)
+        KernelPageTable::new(
+            OffsetPageTable::new(level_4_table, physical_memory_offset),
+            Cr3::read().0,
+        )
     };
 
     info!("before init heap");

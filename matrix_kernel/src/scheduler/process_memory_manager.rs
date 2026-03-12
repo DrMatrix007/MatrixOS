@@ -6,7 +6,9 @@ use x86_64::{
 };
 
 use crate::{
-    memory::{allocator::KernelFrameAllocator, paging::PAGE_TABLE}, memory_locations::PROCESS_CREATION_PAGE_MAP_BASE, scheduler::{process_memory_manager::vads::Vad, process_page_table::ProcessPageTable}
+    memory::{allocator::KernelFrameAllocator, paging::PAGE_TABLE},
+    memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
+    scheduler::{process_memory_manager::vads::Vad, process_page_table::ProcessPageTable},
 };
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
@@ -60,12 +62,15 @@ impl ProcessMemoryManager {
             Page::containing_address(end),
         );
 
+        // TODO: make this Vector of frames RAII!
         let frames = core::iter::repeat_with(|| KernelFrameAllocator.allocate_frame())
             .take(pages.len() as _)
             .collect::<Option<Vec<_>>>(); // TODO: handle failed allocation
 
         if let Some(frames) = frames {
-            self.page_table.map_self(, &mut KernelFrameAllocator);
+            let mapping = self
+                .page_table
+                .map_self(&mut *PAGE_TABLE.lock(), &mut KernelFrameAllocator)?;
 
             for (page, frame) in core::iter::zip(pages, &frames) {}
 

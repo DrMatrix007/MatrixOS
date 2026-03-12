@@ -11,7 +11,7 @@ use x86_64::{
 };
 
 use crate::{
-    memory::{allocator::KernelFrameAllocator, paging::KernelMapper},
+    memory::{allocator::KernelFrameAllocator, paging::KernelPageTable},
     memory_locations::PROCESS_CREATION_PAGE_MAP_BASE,
 };
 
@@ -20,7 +20,7 @@ pub struct ProcessPageTable {
 }
 
 impl ProcessPageTable {
-    pub fn new(current_mapper: &mut impl KernelMapper<Size4KiB>) -> Result<Self> {
+    pub fn new(current_mapper: &mut KernelPageTable) -> Result<Self> {
         let mut frame_allocator = KernelFrameAllocator;
 
         let new_page_table_frame = frame_allocator
@@ -32,11 +32,7 @@ impl ProcessPageTable {
         };
         {
             let phys_offset = current_mapper.phys_offset();
-            let mut page_table = this.map_self(
-                PROCESS_CREATION_PAGE_MAP_BASE,
-                current_mapper,
-                &mut frame_allocator,
-            )?;
+            let mut page_table = this.map_self(current_mapper, &mut frame_allocator)?;
 
             let _page_table = unsafe { OffsetPageTable::new(&mut *page_table, phys_offset) };
         }
@@ -57,7 +53,8 @@ impl ProcessPageTable {
         m: &'a mut impl Mapper<Size4KiB>,
         frame_allocator: &mut impl FrameAllocator<Size4KiB>,
     ) -> Result<ScopedPageTableMapping<'a, 'b>> {
-        let new_page_table_page = Page::<Size4KiB>::containing_address(PROCESS_CREATION_PAGE_MAP_BASE);
+        let new_page_table_page =
+            Page::<Size4KiB>::containing_address(PROCESS_CREATION_PAGE_MAP_BASE);
 
         let flags = PageTableFlags::PRESENT | PageTableFlags::WRITABLE;
 
